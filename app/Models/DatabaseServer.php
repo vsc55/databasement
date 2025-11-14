@@ -6,6 +6,7 @@ use Database\Factories\DatabaseServerFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class DatabaseServer extends Model
 {
@@ -34,5 +35,10 @@ class DatabaseServer extends Model
         return [
             'port' => 'integer',
         ];
+    }
+
+    public function backup(): HasOne
+    {
+        return $this->hasOne(Backup::class);
     }
 }
