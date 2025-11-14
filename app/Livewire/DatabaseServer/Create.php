@@ -3,6 +3,7 @@
 namespace App\Livewire\DatabaseServer;
 
 use App\Models\DatabaseServer;
+use App\Services\DatabaseConnectionTester;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -32,6 +33,12 @@ class Create extends Component
     #[Validate('nullable|string|max:1000')]
     public ?string $description = null;
 
+    public ?string $connectionTestMessage = null;
+
+    public bool $connectionTestSuccess = false;
+
+    public bool $testingConnection = false;
+
     public function save()
     {
         $validated = $this->validate();
@@ -41,6 +48,42 @@ class Create extends Component
         session()->flash('status', 'Database server created successfully!');
 
         return $this->redirect(route('database-servers.index'), navigate: true);
+    }
+
+    public function testConnection(DatabaseConnectionTester $tester)
+    {
+        $this->testingConnection = true;
+        $this->connectionTestMessage = null;
+
+        // Validate only the connection-related fields
+        try {
+            $this->validate([
+                'host' => 'required|string|max:255',
+                'port' => 'required|integer|min:1|max:65535',
+                'database_type' => 'required|string|in:mysql,postgresql,mariadb,sqlite',
+                'username' => 'required|string|max:255',
+                'password' => 'required|string|max:255',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->testingConnection = false;
+            $this->connectionTestSuccess = false;
+            $this->connectionTestMessage = 'Please fill in all required connection fields.';
+
+            return;
+        }
+
+        $result = $tester->test([
+            'database_type' => $this->database_type,
+            'host' => $this->host,
+            'port' => $this->port,
+            'username' => $this->username,
+            'password' => $this->password,
+            'database_name' => $this->database_name,
+        ]);
+
+        $this->connectionTestSuccess = $result['success'];
+        $this->connectionTestMessage = $result['message'];
+        $this->testingConnection = false;
     }
 
     public function render()

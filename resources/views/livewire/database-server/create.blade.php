@@ -110,6 +110,38 @@
                         autocomplete="off"
                     />
                     @error('password') <flux:error>{{ $message }}</flux:error> @enderror
+
+                    <!-- Test Connection Button -->
+                    <div class="pt-2">
+                        <flux:button
+                            type="button"
+                            icon="arrow-path"
+                            variant="outline"
+                            wire:click="testConnection"
+                            :disabled="$testingConnection"
+                        >
+                            @if($testingConnection)
+                                {{ __('Testing Connection...') }}
+                            @else
+                                {{ __('Test Connection') }}
+                            @endif
+                        </flux:button>
+                    </div>
+
+                    <!-- Connection Test Result -->
+                    @if($connectionTestMessage)
+                        <div class="mt-2">
+                            @if($connectionTestSuccess)
+                                <x-banner variant="success">
+                                    {{ $connectionTestMessage }}
+                                </x-banner>
+                            @else
+                                <x-banner variant="error">
+                                    {{ $connectionTestMessage }}
+                                </x-banner>
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Submit Button -->
