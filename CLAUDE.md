@@ -13,7 +13,7 @@ This is a Laravel application for managing database server backups. It uses Live
 - **Authentication**: Laravel Fortify (with two-factor support)
 - **Testing**: Pest PHP
 - **Database**: SQLite (development), supports managing MySQL, PostgreSQL, MariaDB servers
-- **Development Tools**: Laravel Pail (logs), Laravel Pint (formatting), Husky (git hooks)
+- **Development Tools**: Laravel Pail (logs), Laravel Pint (formatting), PHPStan (static analysis), Husky (git hooks)
 
 ## Development Commands
 
@@ -43,6 +43,10 @@ php artisan test                    # Direct artisan command
 make lint-fix           # Auto-fix code style with Laravel Pint (recommended)
 make lint-check         # Check code style without fixing
 vendor/bin/pint         # Direct Pint command
+
+make phpstan            # Run PHPStan static analysis
+make analyse            # Alias for phpstan
+vendor/bin/phpstan analyse --memory-limit=1G  # Direct PHPStan command
 ```
 
 ### Database Operations
