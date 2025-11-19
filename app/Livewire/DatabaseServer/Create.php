@@ -3,7 +3,6 @@
 namespace App\Livewire\DatabaseServer;
 
 use App\Livewire\Forms\DatabaseServerForm;
-use App\Services\DatabaseConnectionTester;
 use Livewire\Component;
 
 class Create extends Component
@@ -12,16 +11,18 @@ class Create extends Component
 
     public function save()
     {
-        $this->form->store();
+        if ($this->form->store()) {
+            session()->flash('status', 'Database server created successfully!');
 
-        session()->flash('status', 'Database server created successfully!');
+            return $this->redirect(route('database-servers.index'), navigate: true);
+        }
 
-        return $this->redirect(route('database-servers.index'), navigate: true);
+        return false;
     }
 
-    public function testConnection(DatabaseConnectionTester $tester)
+    public function testConnection()
     {
-        $this->form->testConnection($tester);
+        $this->form->testConnection();
     }
 
     public function render()

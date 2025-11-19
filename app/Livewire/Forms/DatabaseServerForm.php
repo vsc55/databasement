@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Forms;
 
+use App\Facades\DatabaseConnectionTester;
 use App\Models\Backup;
 use App\Models\DatabaseServer;
-use App\Services\DatabaseConnectionTester;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
 
@@ -30,7 +30,7 @@ class DatabaseServerForm extends Form
     #[Validate('required|string|max:255')]
     public string $password = '';
 
-    #[Validate('nullable|string|max:255')]
+    #[Validate('required|string|max:255')]
     public ?string $database_name = null;
 
     #[Validate('nullable|string|max:1000')]
@@ -71,9 +71,14 @@ class DatabaseServerForm extends Form
         }
     }
 
-    public function store()
+    public function store(): bool
     {
         $validated = $this->validate();
+
+        $this->testConnection();
+        if (! $this->connectionTestSuccess) {
+            return false;
+        }
 
         // Extract backup data
         $backupData = [
@@ -87,9 +92,11 @@ class DatabaseServerForm extends Form
 
         // Create backup
         $server->backup()->create($backupData);
+
+        return true;
     }
 
-    public function update()
+    public function update(): bool
     {
         $validated = $this->validate([
             'name' => 'required|string|max:255',
@@ -97,12 +104,17 @@ class DatabaseServerForm extends Form
             'port' => 'required|integer|min:1|max:65535',
             'database_type' => 'required|string|in:mysql,postgresql,mariadb,sqlite',
             'username' => 'required|string|max:255',
-            'password' => 'nullable|string|max:255',
-            'database_name' => 'nullable|string|max:255',
+            'password' => 'nullable',
+            'database_name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'volume_id' => 'required|exists:volumes,id',
             'recurrence' => 'required|string|in:daily,weekly',
         ]);
+
+        $this->testConnection();
+        if (! $this->connectionTestSuccess) {
+            return false;
+        }
 
         // Extract backup data
         $backupData = [
@@ -124,9 +136,11 @@ class DatabaseServerForm extends Form
         } else {
             $this->server->backup()->create($backupData);
         }
+
+        return true;
     }
 
-    public function testConnection(DatabaseConnectionTester $tester)
+    public function testConnection()
     {
         $this->testingConnection = true;
         $this->connectionTestMessage = null;
@@ -138,7 +152,7 @@ class DatabaseServerForm extends Form
                 'port' => 'required|integer|min:1|max:65535',
                 'database_type' => 'required|string|in:mysql,postgresql,mariadb,sqlite',
                 'username' => 'required|string|max:255',
-                'password' => 'required|string|max:255',
+                'password' => (empty($this->server) ? 'required|string|max:255' : 'nullable'),
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->testingConnection = false;
@@ -148,12 +162,12 @@ class DatabaseServerForm extends Form
             return;
         }
 
-        $result = $tester->test([
+        $result = DatabaseConnectionTester::test([
             'database_type' => $this->database_type,
             'host' => $this->host,
             'port' => $this->port,
             'username' => $this->username,
-            'password' => $this->password,
+            'password' => ($this->password) ?: $this->server->password,
             'database_name' => $this->database_name,
         ]);
 

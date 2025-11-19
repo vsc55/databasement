@@ -158,7 +158,7 @@
                                 </td>
                                 <td>
                                     <div class="table-cell-primary">{{ $server->backup->volume->name }}</div>
-                                    <div capitalize">{{ $server->backup->recurrence }}</div>
+                                    <div capitalize>{{ $server->backup->recurrence }}</div>
                                 </td>
                                 <td>
                                     {{ $server->created_at->diffForHumans() }}

@@ -29,7 +29,7 @@ setup: ## Full project setup (install, env, key, migrate, build)
 	$(PHP_COMPOSER) setup
 
 start: ## Start development server (all services: server, queue, logs, vite)
-	$(PHP_COMPOSER) dev
+	docker compose up -d
 
 ##@ Testing
 

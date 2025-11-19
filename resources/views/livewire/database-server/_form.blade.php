@@ -13,7 +13,6 @@
             required
             autofocus
         />
-        @error('form.name') <flux:error>{{ $message }}</flux:error> @enderror
 
         <flux:textarea
             wire:model="form.description"
@@ -21,7 +20,6 @@
             :placeholder="__('Optional description for this server')"
             rows="3"
         />
-        @error('form.description') <flux:error>{{ $message }}</flux:error> @enderror
     </div>
 
     <!-- Connection Details -->
@@ -33,14 +31,12 @@
         <flux:select
             wire:model="form.database_type"
             :label="__('Database Type')"
-            required
         >
             <option value="mysql">MySQL</option>
             <option value="mariadb">MariaDB</option>
             <option value="postgresql">PostgreSQL</option>
             <option value="sqlite">SQLite</option>
         </flux:select>
-        @error('form.database_type') <flux:error>{{ $message }}</flux:error> @enderror
 
         <div class="grid gap-4 md:grid-cols-2">
             <div>
@@ -51,7 +47,6 @@
                     type="text"
                     required
                 />
-                @error('form.host') <flux:error>{{ $message }}</flux:error> @enderror
             </div>
 
             <div>
@@ -62,55 +57,45 @@
                     type="number"
                     required
                 />
-                @error('form.port') <flux:error>{{ $message }}</flux:error> @enderror
             </div>
         </div>
 
         <flux:input
             wire:model="form.database_name"
             :label="__('Database Name')"
-            :placeholder="__('Optional: specific database name')"
             type="text"
         />
-        @error('form.database_name') <flux:error>{{ $message }}</flux:error> @enderror
     </div>
 
-    <!-- Authentication -->
-    <flux:separator />
-
     <div class="space-y-4">
-        <flux:heading size="lg">{{ __('Authentication') }}</flux:heading>
 
-        <flux:input
-            wire:model="form.username"
-            :label="__('Username')"
-            :placeholder="__('Database username')"
-            type="text"
-            required
-            autocomplete="off"
-        />
-        @error('form.username') <flux:error>{{ $message }}</flux:error> @enderror
-
-        <div>
+        <div class="grid gap-4 md:grid-cols-2">
             <flux:input
-                wire:model="form.password"
-                :label="__('Password')"
-                :placeholder="$isEdit ? __('Leave blank to keep current password') : __('Database password')"
-                type="password"
-                :required="!$isEdit"
+                wire:model="form.username"
+                :label="__('Username')"
+                :placeholder="__('Database username')"
+                type="text"
+                required
                 autocomplete="off"
             />
-            @if($isEdit)
-                <flux:text class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    {{ __('Only enter a new password if you want to change it.') }}
-                </flux:text>
-            @endif
-            @error('form.password') <flux:error>{{ $message }}</flux:error> @enderror
+            @error('form.username') <flux:error>{{ $message }}</flux:error> @enderror
+
+            <div>
+                <flux:input
+                    wire:model="form.password"
+                    :label="__('Password')"
+                    :placeholder="$isEdit ? __('Leave blank to keep current password') : __('Database password')"
+                    type="password"
+                    :required="!$isEdit"
+                    autocomplete="off"
+                />
+            </div>
         </div>
 
         <!-- Test Connection Button -->
         <div class="pt-2">
             <flux:button
+                class="w-full"
                 type="button"
                 icon="arrow-path"
                 variant="outline"

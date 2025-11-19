@@ -4,7 +4,6 @@ namespace App\Livewire\DatabaseServer;
 
 use App\Livewire\Forms\DatabaseServerForm;
 use App\Models\DatabaseServer;
-use App\Services\DatabaseConnectionTester;
 use Livewire\Component;
 
 class Edit extends Component
@@ -18,16 +17,18 @@ class Edit extends Component
 
     public function save()
     {
-        $this->form->update();
+        if ($this->form->update()) {
+            session()->flash('status', 'Database server updated successfully!');
 
-        session()->flash('status', 'Database server updated successfully!');
+            return $this->redirect(route('database-servers.index'), navigate: true);
+        }
 
-        return $this->redirect(route('database-servers.index'), navigate: true);
+        return false;
     }
 
-    public function testConnection(DatabaseConnectionTester $tester)
+    public function testConnection()
     {
-        $this->form->testConnection($tester);
+        $this->form->testConnection();
     }
 
     public function render()

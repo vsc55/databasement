@@ -1,5 +1,6 @@
 <?php
 
+use App\Facades\DatabaseConnectionTester;
 use App\Livewire\DatabaseServer\Create;
 use App\Models\User;
 use Livewire\Livewire;
@@ -18,6 +19,13 @@ test('authenticated users can access create page', function () {
 });
 
 test('can create database server with valid data', function () {
+    DatabaseConnectionTester::shouldReceive('test')
+        ->once()
+        ->andReturn([
+            'success' => true,
+            'message' => 'Successfully connected to the database server!',
+        ]);
+
     $user = User::factory()->create();
     $volume = \App\Models\Volume::create([
         'name' => 'Test Volume',
@@ -93,6 +101,13 @@ test('shows validation error for invalid port', function () {
 });
 
 test('shows success message after creating server', function () {
+    DatabaseConnectionTester::shouldReceive('test')
+        ->once()
+        ->andReturn([
+            'success' => true,
+            'message' => 'Successfully connected to the database server!',
+        ]);
+
     $user = User::factory()->create();
     $volume = \App\Models\Volume::create([
         'name' => 'Test Volume',
@@ -108,6 +123,7 @@ test('shows success message after creating server', function () {
         ->set('form.database_type', 'mysql')
         ->set('form.username', 'root')
         ->set('form.password', 'secret')
+        ->set('form.database_name', 'testdb')
         ->set('form.volume_id', $volume->id)
         ->set('form.recurrence', 'daily')
         ->call('save');
@@ -116,6 +132,13 @@ test('shows success message after creating server', function () {
 });
 
 test('creates backup with weekly recurrence', function () {
+    DatabaseConnectionTester::shouldReceive('test')
+        ->once()
+        ->andReturn([
+            'success' => true,
+            'message' => 'Successfully connected to the database server!',
+        ]);
+
     $user = User::factory()->create();
     $volume = \App\Models\Volume::create([
         'name' => 'Test Volume',
@@ -131,6 +154,7 @@ test('creates backup with weekly recurrence', function () {
         ->set('form.database_type', 'mysql')
         ->set('form.username', 'root')
         ->set('form.password', 'secret')
+        ->set('form.database_name', 'weekly_db')
         ->set('form.volume_id', $volume->id)
         ->set('form.recurrence', 'weekly')
         ->call('save')

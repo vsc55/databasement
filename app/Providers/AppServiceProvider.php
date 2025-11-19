@@ -10,6 +10,7 @@ use App\Services\Backup\Filesystems\FilesystemProvider;
 use App\Services\Backup\Filesystems\LocalFilesystem;
 use App\Services\Backup\GzipCompressor;
 use App\Services\Backup\ShellProcessor;
+use App\Services\DatabaseConnectionTester;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Register database connection tester
+        $this->app->singleton(DatabaseConnectionTester::class);
+
         // Register backup service components
         $this->app->singleton(ShellProcessor::class);
         $this->app->singleton(GzipCompressor::class);

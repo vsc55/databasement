@@ -9,7 +9,7 @@ services:
       WEB_DOCUMENT_ROOT: /app/public
       SERVER_NAME: :8080
     ports:
-      - "8080:8080"
+      - "8081:8080"
   mysql:
     image: mysql:8.0
     container_name: backup-manager-mysql

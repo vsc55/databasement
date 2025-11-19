@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Facades;
+
+use Illuminate\Support\Facades\Facade;
+
+/**
+ * @method static array test(array $config)
+ *
+ * @see \App\Services\DatabaseConnectionTester
+ */
+class DatabaseConnectionTester extends Facade
+{
+    protected static function getFacadeAccessor(): string
+    {
+        return \App\Services\DatabaseConnectionTester::class;
+    }
+}
