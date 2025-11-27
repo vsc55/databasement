@@ -26,40 +26,40 @@
 <x-main>
     {{-- SIDEBAR --}}
     <x-slot:sidebar drawer="main-drawer" collapsible class="bg-base-100 lg:bg-inherit">
+        <div class="flex flex-col h-full">
+            {{-- BRAND --}}
+            <x-app-brand class="px-5 pt-4" />
 
-        {{-- BRAND --}}
-        <x-app-brand class="px-5 pt-4" />
+            {{-- MAIN MENU --}}
+            <x-menu activate-by-route class="flex-1">
+                <x-menu-separator />
+                <x-menu-item title="{{ __('Dashboard') }}" icon="o-home" link="{{ route('dashboard') }}" wire:navigate />
+                <x-menu-item title="{{ __('Database Servers') }}" icon="o-server-stack" link="{{ route('database-servers.index') }}" wire:navigate />
+                <x-menu-item title="{{ __('Snapshots') }}" icon="o-camera" link="{{ route('snapshots.index') }}" wire:navigate />
+                <x-menu-item title="{{ __('Volumes') }}" icon="o-circle-stack" link="{{ route('volumes.index') }}" wire:navigate />
+            </x-menu>
 
-        <x-menu activate-by-route>
-            {{-- User --}}
+            {{-- USER SECTION AT BOTTOM --}}
             @if($user = auth()->user())
-                <x-menu-separator />
+                <x-menu activate-by-route class="mt-auto" title="">
+                    <x-menu-sub title="{{ $user->name }}"  icon="o-user">
+                        <x-menu-item title="{{ __('Profile') }}" icon="o-user" link="{{ route('profile.edit') }}" wire:navigate />
+                        <x-menu-item title="{{ __('Password') }}" icon="o-key" link="{{ route('user-password.edit') }}" wire:navigate />
+                        @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
+                            <x-menu-item title="{{ __('Two-Factor Auth') }}" icon="o-shield-check" link="{{ route('two-factor.show') }}" wire:navigate />
+                        @endif
+                        <x-menu-item title="{{ __('Appearance') }}" icon="o-paint-brush" link="{{ route('appearance.edit') }}" wire:navigate />
 
-                <x-list-item :item="$user" value="name" sub-value="email" no-separator no-hover class="-mx-2 !-my-2 rounded">
-                    <x-slot:actions>
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" class="w-full">
                             @csrf
-                            <x-button icon="o-power" type="submit" class="btn-circle btn-ghost btn-xs" tooltip-left="logoff" />
+                            <x-button type="submit" class="w-full" icon="o-power">
+                                {{ __('Logout') }}
+                            </x-button>
                         </form>
-                    </x-slot:actions>
-                </x-list-item>
-
-                <x-menu-separator />
+                    </x-menu-sub>
+                </x-menu>
             @endif
-
-            <x-menu-item title="{{ __('Dashboard') }}" icon="o-home" link="{{ route('dashboard') }}" wire:navigate />
-            <x-menu-item title="{{ __('Database Servers') }}" icon="o-server-stack" link="{{ route('database-servers.index') }}" wire:navigate />
-            <x-menu-item title="{{ __('Snapshots') }}" icon="o-camera" link="{{ route('snapshots.index') }}" wire:navigate />
-            <x-menu-item title="{{ __('Volumes') }}" icon="o-circle-stack" link="{{ route('volumes.index') }}" wire:navigate />
-            <x-menu-sub title="Settings" icon="o-cog-6-tooth">
-                <x-menu-item title="{{ __('Profile') }}" icon="o-user" link="{{ route('profile.edit') }}" wire:navigate />
-                <x-menu-item title="{{ __('Password') }}" icon="o-key" link="{{ route('user-password.edit') }}" wire:navigate />
-                @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
-                    <x-menu-item title="{{ __('Two-Factor Auth') }}" icon="o-shield-check" link="{{ route('two-factor.show') }}" wire:navigate />
-                @endif
-                <x-menu-item title="{{ __('Appearance') }}" icon="o-paint-brush" link="{{ route('appearance.edit') }}" wire:navigate />
-            </x-menu-sub>
-        </x-menu>
+        </div>
     </x-slot:sidebar>
 
     {{-- The `$slot` goes here --}}
