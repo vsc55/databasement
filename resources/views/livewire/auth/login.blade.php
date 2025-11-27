@@ -9,7 +9,7 @@
             <x-alert class="alert-success" icon="o-check-circle">{{ session('status') }}</x-alert>
         @endif
 
-        <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-6">
+        <x-form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-6">
             @csrf
 
             <!-- Email Address -->
@@ -46,7 +46,7 @@
             <div class="flex items-center justify-end">
                 <x-button type="submit" class="btn-primary w-full" label="{{ __('Log in') }}" data-test="login-button" />
             </div>
-        </form>
+        </x-form>
 
         @if (Route::has('register'))
             <div class="space-x-1 text-sm text-center rtl:space-x-reverse">
