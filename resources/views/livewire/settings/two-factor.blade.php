@@ -50,6 +50,7 @@
     <x-modal
         wire:model="showModal"
         title="{{ $this->modalConfig['title'] }}"
+        class="backdrop-blur"
     >
         <div class="space-y-6">
             <div class="flex flex-col items-center space-y-4">

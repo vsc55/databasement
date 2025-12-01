@@ -1,6 +1,6 @@
 @props(['title', 'message', 'onConfirm', 'onCancel'])
 
-<x-modal wire:model="showDeleteModal" title="{{ $title }}">
+<x-modal wire:model="showDeleteModal" title="{{ $title }}" class="backdrop-blur">
     <p>{{ $message }}</p>
 
     <x-slot:actions>

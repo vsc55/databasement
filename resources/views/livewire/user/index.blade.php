@@ -119,39 +119,16 @@
     </x-drawer>
 
     <!-- DELETE CONFIRMATION MODAL -->
-    <x-modal wire:model="showDeleteModal" title="{{ __('Delete User') }}" separator>
-        <p>{{ __('Are you sure you want to delete this user? This action cannot be undone.') }}</p>
-
-        <x-slot:actions>
-            <x-button label="{{ __('Cancel') }}" @click="$wire.showDeleteModal = false" />
-            <x-button label="{{ __('Delete') }}" wire:click="delete" class="btn-error" spinner="delete" />
-        </x-slot:actions>
-    </x-modal>
+    <x-delete-confirmation-modal
+        :title="__('Delete User')"
+        :message="__('Are you sure you want to delete this user? This action cannot be undone.')"
+        onConfirm="delete"
+    />
 
     <!-- COPY INVITATION LINK MODAL -->
-    <x-modal wire:model="showCopyModal" title="{{ __('Invitation Link') }}" separator>
-        <p class="mb-4">{{ __('Copy this link and send it to the user so they can complete their registration.') }}</p>
-
-        <div class="flex gap-2">
-            <x-input
-                :value="$invitationUrl"
-                readonly
-                class="flex-1"
-                x-ref="invitationInput"
-            />
-            <x-button
-                icon="o-clipboard-document"
-                class="btn-primary"
-                x-on:click="
-                    navigator.clipboard.writeText($refs.invitationInput.value);
-                    $wire.success('Link copied to clipboard!', { position: 'toast-bottom' });
-                "
-                tooltip="{{ __('Copy') }}"
-            />
-        </div>
-
-        <x-slot:actions>
-            <x-button label="{{ __('Close') }}" @click="$wire.showCopyModal = false" class="btn-primary" />
-        </x-slot:actions>
-    </x-modal>
+    <x-invitation-link-modal
+        :title="__('Invitation Link')"
+        :message="__('Copy this link and send it to the user so they can complete their registration.')"
+        :doneLabel="__('Close')"
+    />
 </div>

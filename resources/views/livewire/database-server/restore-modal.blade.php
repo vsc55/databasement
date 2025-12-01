@@ -1,5 +1,5 @@
 <div>
-    <x-modal wire:model="showModal" title="{{ __('Restore Database Snapshot') }}" box-class="max-w-3xl w-11/12 space-y-6">
+    <x-modal wire:model="showModal" title="{{ __('Restore Database Snapshot') }}" box-class="max-w-3xl w-11/12 space-y-6" class="backdrop-blur">
         <p class="text-sm opacity-70">
             {{ __('Restore to:') }} <strong>{{ $targetServer?->name }}</strong>
         </p>

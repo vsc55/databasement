@@ -51,29 +51,9 @@
     </div>
 
     <!-- INVITATION LINK MODAL -->
-    <x-modal wire:model="showCopyModal" title="{{ __('User Created Successfully') }}" separator persistent>
-        <p class="mb-4">{{ __('The user has been created. Copy the invitation link below and send it to the user so they can set their password and complete registration.') }}</p>
-
-        <div class="flex gap-2">
-            <x-input
-                :value="$invitationUrl"
-                readonly
-                class="flex-1"
-                x-ref="invitationInput"
-            />
-            <x-button
-                icon="o-clipboard-document"
-                class="btn-primary"
-                x-on:click="
-                    navigator.clipboard.writeText($refs.invitationInput.value);
-                    $wire.success('Link copied to clipboard!', { position: 'toast-bottom' });
-                "
-                tooltip="{{ __('Copy') }}"
-            />
-        </div>
-
-        <x-slot:actions>
-            <x-button label="{{ __('Done') }}" wire:click="closeAndRedirect" class="btn-primary" />
-        </x-slot:actions>
-    </x-modal>
+    <x-invitation-link-modal
+        :title="__('User Created Successfully')"
+        :message="__('The user has been created. Copy the invitation link below and send it to the user so they can set their password and complete registration.')"
+        doneAction="closeAndRedirect"
+    />
 </div>

@@ -10,7 +10,7 @@
         data-test="delete-user-button"
     />
 
-    <x-modal wire:model="showDeleteModal" title="{{ __('Are you sure you want to delete your account?') }}" >
+    <x-modal wire:model="showDeleteModal" title="{{ __('Are you sure you want to delete your account?') }}" class="backdrop-blur">
         <p class="mb-4">
             {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
         </p>

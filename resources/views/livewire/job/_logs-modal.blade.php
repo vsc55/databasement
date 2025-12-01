@@ -66,13 +66,13 @@
                                 $hasDetails = $log['type'] === 'command' || (isset($log['context']) && !empty($log['context']));
                             @endphp
 
-                            <div class="flex border-l-4 {{ $isError ? 'border-l-error bg-error/5' : ($isWarning ? 'border-l-warning' : ($isSuccess ? 'border-l-success' : 'border-l-base-300')) }}">
+                            <div class="flex border-l-4 {{ $isError ? 'border-l-error bg-error/5' : ($isWarning ? 'border-l-warning' : ($isSuccess ? 'border-l-success' : 'border-l-info')) }}">
                                 @if($hasDetails)
-                                    <x-collapse collapse-plus-minus class="flex-1 rounded-none border-none font-normal">
-                                        <x-slot:heading class="font-normal">
+                                    <x-collapse collapse-plus-minus class="flex-1 rounded-none border-none">
+                                        <x-slot:heading>
                                             <div class="flex items-center w-full -ml-4">
                                                 <div class="w-44 flex-shrink-0 px-4 font-mono text-sm text-base-content/70">
-                                                    {{ $timestamp->format('M d, H:i:s') }}.{{ $timestamp->format('v') }}
+                                                    {{ $timestamp->format('M d, H:i:s') }}
                                                 </div>
                                                 <div class="flex-1 px-4 flex items-center gap-3">
                                                     <span class="text-sm truncate {{ $isError ? 'text-error' : '' }}">
@@ -139,9 +139,9 @@
                                     </x-collapse>
                                 @else
                                     <!-- No details - plain row without collapse -->
-                                    <div class="flex-1 flex items-center py-4 px-4">
+                                    <div class="flex-1 flex items-center py-4 px-4 font-semibold">
                                         <div class="w-44 flex-shrink-0 font-mono text-sm text-base-content/70">
-                                            {{ $timestamp->format('M d, H:i:s') }}.{{ $timestamp->format('v') }}
+                                            {{ $timestamp->format('M d, H:i:s') }}
                                         </div>
                                         <div class="flex-1 flex items-center gap-3">
                                             <span class="text-sm {{ $isError ? 'text-error' : '' }}">
