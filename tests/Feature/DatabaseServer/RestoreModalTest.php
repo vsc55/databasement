@@ -1,0 +1,254 @@
+<?php
+
+use App\Jobs\ProcessRestoreJob;
+use App\Livewire\DatabaseServer\RestoreModal;
+use App\Models\BackupJob;
+use App\Models\DatabaseServer;
+use App\Models\Snapshot;
+use App\Models\User;
+use Illuminate\Support\Facades\Queue;
+use Livewire\Livewire;
+
+use function Pest\Laravel\actingAs;
+
+beforeEach(function () {
+    $this->user = User::factory()->create();
+    actingAs($this->user);
+});
+
+function createSnapshotForServer(DatabaseServer $server, array $attributes = []): Snapshot
+{
+    return Snapshot::create(array_merge([
+        'database_server_id' => $server->id,
+        'backup_id' => $server->backup->id,
+        'volume_id' => $server->backup->volume_id,
+        'path' => 'test-backup-'.uniqid().'.sql.gz',
+        'file_size' => 1024,
+        'started_at' => now(),
+        'database_name' => $server->database_name ?? 'testdb',
+        'database_type' => $server->database_type,
+        'database_host' => $server->host,
+        'database_port' => $server->port,
+        'compression_type' => 'gzip',
+        'method' => 'manual',
+    ], $attributes));
+}
+
+test('modal can be rendered', function () {
+    $targetServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    Livewire::test(RestoreModal::class)
+        ->set('targetServer', $targetServer)
+        ->assertOk();
+});
+
+test('can navigate through restore wizard steps', function () {
+    // Create target server
+    $targetServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    // Create source server with snapshot
+    $sourceServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    $snapshot = createSnapshotForServer($sourceServer);
+
+    // Create job for snapshot
+    BackupJob::create([
+        'snapshot_id' => $snapshot->id,
+        'status' => 'completed',
+        'started_at' => now(),
+        'completed_at' => now(),
+    ]);
+
+    $component = Livewire::test(RestoreModal::class)
+        ->set('targetServer', $targetServer)
+        ->set('showModal', true);
+
+    // Step 1: Select source server
+    $component->assertSet('currentStep', 1)
+        ->assertSee($sourceServer->name)
+        ->call('selectSourceServer', $sourceServer->id)
+        ->assertSet('selectedSourceServerId', $sourceServer->id)
+        ->assertSet('currentStep', 2);
+
+    // Step 2: Select snapshot
+    $component->assertSee($snapshot->database_name)
+        ->call('selectSnapshot', $snapshot->id)
+        ->assertSet('selectedSnapshotId', $snapshot->id)
+        ->assertSet('currentStep', 3);
+
+    // Step 3: Enter schema name
+    $component->assertSet('currentStep', 3);
+});
+
+test('can queue restore job with valid data', function () {
+    Queue::fake();
+
+    $targetServer = DatabaseServer::factory()->create([
+        'database_type' => 'postgresql',
+    ]);
+
+    $sourceServer = DatabaseServer::factory()->create([
+        'database_type' => 'postgresql',
+    ]);
+
+    $snapshot = createSnapshotForServer($sourceServer, ['database_name' => 'test_db']);
+
+    BackupJob::create([
+        'snapshot_id' => $snapshot->id,
+        'status' => 'completed',
+        'started_at' => now(),
+        'completed_at' => now(),
+    ]);
+
+    Livewire::test(RestoreModal::class)
+        ->set('targetServer', $targetServer)
+        ->set('selectedSourceServerId', $sourceServer->id)
+        ->set('selectedSnapshotId', $snapshot->id)
+        ->set('schemaName', 'restored_db')
+        ->set('currentStep', 3)
+        ->call('restore')
+        ->assertDispatched('restore-completed');
+
+    // Verify the job was pushed with correct parameters
+    Queue::assertPushed(ProcessRestoreJob::class, 1);
+
+    $pushedJob = Queue::pushed(ProcessRestoreJob::class)->first();
+    expect($pushedJob->snapshotId)->toBe($snapshot->id);
+    expect($pushedJob->targetServerId)->toBe($targetServer->id);
+    expect($pushedJob->schemaName)->toBe('restored_db');
+    expect($pushedJob->method)->toBe('manual');
+    expect((string) $pushedJob->userId)->toBe((string) $this->user->id);
+});
+
+test('validates schema name is required', function () {
+    $targetServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    $sourceServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    $snapshot = createSnapshotForServer($sourceServer);
+
+    BackupJob::create([
+        'snapshot_id' => $snapshot->id,
+        'status' => 'completed',
+        'started_at' => now(),
+        'completed_at' => now(),
+    ]);
+
+    Livewire::test(RestoreModal::class)
+        ->set('targetServer', $targetServer)
+        ->set('selectedSourceServerId', $sourceServer->id)
+        ->set('selectedSnapshotId', $snapshot->id)
+        ->set('schemaName', '')
+        ->set('currentStep', 3)
+        ->call('restore')
+        ->assertHasErrors(['schemaName' => 'required']);
+});
+
+test('validates schema name format', function () {
+    $targetServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    $sourceServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    $snapshot = createSnapshotForServer($sourceServer);
+
+    BackupJob::create([
+        'snapshot_id' => $snapshot->id,
+        'status' => 'completed',
+        'started_at' => now(),
+        'completed_at' => now(),
+    ]);
+
+    Livewire::test(RestoreModal::class)
+        ->set('targetServer', $targetServer)
+        ->set('selectedSourceServerId', $sourceServer->id)
+        ->set('selectedSnapshotId', $snapshot->id)
+        ->set('schemaName', 'invalid-name-with-dashes!')
+        ->set('currentStep', 3)
+        ->call('restore')
+        ->assertHasErrors(['schemaName' => 'regex']);
+});
+
+test('only shows compatible servers with same database type', function () {
+    $targetServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    // Create MySQL server with snapshot
+    $mysqlServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    $mysqlSnapshot = createSnapshotForServer($mysqlServer);
+
+    BackupJob::create([
+        'snapshot_id' => $mysqlSnapshot->id,
+        'status' => 'completed',
+        'started_at' => now(),
+        'completed_at' => now(),
+    ]);
+
+    // Create PostgreSQL server with snapshot (should NOT be shown)
+    $postgresServer = DatabaseServer::factory()->create([
+        'database_type' => 'postgresql',
+    ]);
+
+    $postgresSnapshot = createSnapshotForServer($postgresServer);
+
+    BackupJob::create([
+        'snapshot_id' => $postgresSnapshot->id,
+        'status' => 'completed',
+        'started_at' => now(),
+        'completed_at' => now(),
+    ]);
+
+    Livewire::test(RestoreModal::class)
+        ->set('targetServer', $targetServer)
+        ->set('showModal', true)
+        ->assertSee($mysqlServer->name)
+        ->assertDontSee($postgresServer->name);
+});
+
+test('can go back to previous steps', function () {
+    $targetServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    $sourceServer = DatabaseServer::factory()->create([
+        'database_type' => 'mysql',
+    ]);
+
+    $snapshot = createSnapshotForServer($sourceServer);
+
+    BackupJob::create([
+        'snapshot_id' => $snapshot->id,
+        'status' => 'completed',
+        'started_at' => now(),
+        'completed_at' => now(),
+    ]);
+
+    Livewire::test(RestoreModal::class)
+        ->set('targetServer', $targetServer)
+        ->call('selectSourceServer', $sourceServer->id)
+        ->assertSet('currentStep', 2)
+        ->call('previousStep')
+        ->assertSet('currentStep', 1)
+        ->call('selectSourceServer', $sourceServer->id)
+        ->call('selectSnapshot', $snapshot->id)
+        ->assertSet('currentStep', 3)
+        ->call('previousStep')
+        ->assertSet('currentStep', 2);
+});

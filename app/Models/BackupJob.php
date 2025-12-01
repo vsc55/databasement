@@ -1,15 +1,74 @@
 <?php
 
-namespace App\Models\Concerns;
+namespace App\Models;
 
-trait HasJob
+use App\Contracts\JobInterface;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+/**
+ * @property string $id
+ * @property string|null $snapshot_id
+ * @property string|null $restore_id
+ * @property string|null $job_id
+ * @property string $status
+ * @property \Illuminate\Support\Carbon|null $started_at
+ * @property \Illuminate\Support\Carbon|null $completed_at
+ * @property string|null $error_message
+ * @property string|null $error_trace
+ * @property array|null $logs
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Snapshot|null $snapshot
+ * @property-read \App\Models\Restore|null $restore
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob query()
+ *
+ * @mixin \Eloquent
+ */
+class BackupJob extends Model implements JobInterface
 {
+    use HasUlids;
+
+    protected $fillable = [
+        'snapshot_id',
+        'restore_id',
+        'job_id',
+        'status',
+        'started_at',
+        'completed_at',
+        'error_message',
+        'error_trace',
+        'logs',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'started_at' => 'datetime',
+            'completed_at' => 'datetime',
+            'logs' => 'array',
+        ];
+    }
+
+    public function snapshot(): BelongsTo
+    {
+        return $this->belongsTo(Snapshot::class);
+    }
+
+    public function restore(): BelongsTo
+    {
+        return $this->belongsTo(Restore::class);
+    }
+
     /**
      * Calculate the duration of the job in milliseconds
      */
     public function getDurationMs(): ?int
     {
-        /** @phpstan-ignore-next-line */
         if ($this->completed_at === null || $this->started_at === null) {
             return null;
         }
@@ -174,5 +233,13 @@ trait HasJob
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
+    }
+
+    /**
+     * Scope to filter by status (for restores)
+     */
+    public function scopeQueued($query)
+    {
+        return $query->where('status', 'queued');
     }
 }

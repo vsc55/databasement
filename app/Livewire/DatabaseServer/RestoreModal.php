@@ -4,7 +4,6 @@ namespace App\Livewire\DatabaseServer;
 
 use App\Jobs\ProcessRestoreJob;
 use App\Models\DatabaseServer;
-use App\Models\Restore;
 use App\Models\Snapshot;
 use App\Services\Backup\DatabaseListService;
 use Livewire\Attributes\On;
@@ -103,19 +102,14 @@ class RestoreModal extends Component
         ]);
 
         try {
-            $snapshot = Snapshot::findOrFail($this->selectedSnapshotId);
-
-            // Create a restore record to track the operation
-            $restore = Restore::create([
-                'snapshot_id' => $snapshot->id,
-                'target_server_id' => $this->targetServer->id,
-                'schema_name' => $this->schemaName,
-                'status' => 'queued',
-                'triggered_by_user_id' => auth()->id(),
-            ]);
-
-            // Dispatch the restore job
-            ProcessRestoreJob::dispatch($restore->id);
+            // Dispatch the restore job (it will create the restore record and job)
+            ProcessRestoreJob::dispatch(
+                snapshotId: $this->selectedSnapshotId,
+                targetServerId: $this->targetServer->id,
+                schemaName: $this->schemaName,
+                method: 'manual',
+                userId: auth()->id()
+            );
 
             $this->success("Restore queued successfully! You'll be notified when it completes.");
 
@@ -136,10 +130,11 @@ class RestoreModal extends Component
         return DatabaseServer::query()
             ->where('database_type', $this->targetServer->database_type)
             ->whereHas('snapshots', function ($query) {
-                $query->where('status', 'completed');
+                $query->whereHas('job', fn ($q) => $q->where('status', 'completed'));
             })
             ->with(['snapshots' => function ($query) {
-                $query->where('status', 'completed')
+                $query->whereHas('job', fn ($q) => $q->where('status', 'completed'))
+                    ->with('job')
                     ->orderBy('created_at', 'desc');
             }])
             ->get();
@@ -152,7 +147,8 @@ class RestoreModal extends Component
         }
 
         return DatabaseServer::with(['snapshots' => function ($query) {
-            $query->where('status', 'completed')
+            $query->whereHas('job', fn ($q) => $q->where('status', 'completed'))
+                ->with('job')
                 ->orderBy('created_at', 'desc');
         }])->find($this->selectedSourceServerId);
     }

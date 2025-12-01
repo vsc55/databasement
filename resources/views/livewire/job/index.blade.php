@@ -11,154 +11,110 @@
 
     <!-- TABLE -->
     <x-card shadow>
-        <table class="table-default">
-            <thead>
-                <tr>
-                    @foreach($headers as $header)
-                        <th class="{{ $header['class'] ?? '' }}">{{ $header['label'] }}</th>
-                    @endforeach
-                    <th class="w-24"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($jobs as $job)
-                    <tr wire:key="job-{{ $job['type'] }}-{{ $job['id'] }}">
-                        <!-- Type -->
-                        <td>
-                            @if($job['type'] === 'backup')
-                                <x-badge value="{{ __('Backup') }}" class="badge-primary" />
-                            @else
-                                <x-badge value="{{ __('Restore') }}" class="badge-secondary" />
-                            @endif
-                        </td>
-
-                        <!-- Started At -->
-                        <td>
-                            @if($job['started_at'])
-                                <div class="table-cell-primary">{{ $job['started_at']->format('M d, Y H:i') }}</div>
-                                <div class="text-sm text-base-content/70">{{ $job['started_at']->diffForHumans() }}</div>
-                            @else
-                                <span class="text-base-content/50">-</span>
-                            @endif
-                        </td>
-
-                        <!-- Server / Database -->
-                        <td>
-                            @if($job['type'] === 'backup')
-                                <div class="table-cell-primary">{{ $job['server_name'] }}</div>
-                                <div class="text-sm text-base-content/70">
-                                    <x-badge :value="$job['database_type']" class="badge-xs" />
-                                    {{ $job['database_name'] }}
-                                </div>
-                            @else
-                                <div class="table-cell-primary">{{ $job['server_name'] }} (Target)</div>
-                                <div class="text-sm text-base-content/70">
-                                    @if($job['database_type'])
-                                        <x-badge :value="$job['database_type']" class="badge-xs" />
-                                    @endif
-                                    {{ $job['database_name'] }}
-                                </div>
-                                @if($job['source_server'])
-                                    <div class="text-xs text-base-content/50">From: {{ $job['source_server'] }}</div>
-                                @endif
-                            @endif
-                        </td>
-
-                        <!-- Status -->
-                        <td>
-                            @if($job['status'] === 'completed')
-                                <x-badge value="{{ __('Completed') }}" class="badge-success" />
-                            @elseif($job['status'] === 'failed')
-                                <x-badge value="{{ __('Failed') }}" class="badge-error" />
-                            @elseif($job['status'] === 'running')
-                                <x-badge value="{{ __('Running') }}" class="badge-warning" />
-                            @elseif($job['status'] === 'queued')
-                                <x-badge value="{{ __('Queued') }}" class="badge-info" />
-                            @else
-                                <x-badge value="{{ __('Pending') }}" class="badge-info" />
-                            @endif
-                        </td>
-
-                        <!-- Duration -->
-                        <td>
-                            @if($job['duration'])
-                                {{ $job['duration'] }}
-                            @else
-                                <span class="text-base-content/50">-</span>
-                            @endif
-                        </td>
-
-                        <!-- Triggered By -->
-                        <td>
-                            @if($job['triggered_by'])
-                                <div class="flex items-center gap-2">
-                                    <x-icon name="o-user" class="w-4 h-4 text-base-content/50" />
-                                    {{ $job['triggered_by'] }}
-                                </div>
-                            @else
-                                <span class="text-base-content/50">-</span>
-                            @endif
-                        </td>
-
-                        <!-- Actions -->
-                        <td>
-                            <div class="flex justify-end">
-                                <x-button
-                                    icon="o-document-text"
-                                    wire:click="viewLogs('{{ $job['type'] }}', '{{ $job['id'] }}')"
-                                    tooltip="{{ __('View Logs') }}"
-                                    class="btn-ghost btn-sm"
-                                    :class="!$job['has_logs'] ? 'opacity-30' : ''"
-                                    :disabled="!$job['has_logs']"
-                                />
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Error message row (if failed) -->
-                    @if($job['status'] === 'failed' && $job['error_message'])
-                        <tr wire:key="job-error-{{ $job['type'] }}-{{ $job['id'] }}" class="bg-error/10">
-                            <td colspan="{{ count($headers) + 1 }}" class="text-sm">
-                                <div class="flex items-start gap-2 text-error">
-                                    <x-icon name="o-exclamation-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                    <div>
-                                        <span class="font-semibold">Error:</span>
-                                        {{ $job['error_message'] }}
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    @endif
-                @empty
-                    <tr>
-                        <td colspan="{{ count($headers) + 1 }}" class="text-center text-base-content/50 py-8">
-                            @if($search || $statusFilter !== 'all' || $typeFilter !== 'all')
-                                {{ __('No jobs found matching your filters.') }}
-                            @else
-                                {{ __('No jobs yet. Backups and restores will appear here.') }}
-                            @endif
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        <!-- Pagination -->
-        @if($total > $perPage)
-            <div class="flex justify-between items-center mt-4 px-4 pb-4">
-                <div class="text-sm text-base-content/70">
-                    Showing {{ ($currentPage - 1) * $perPage + 1 }} to {{ min($currentPage * $perPage, $total) }} of {{ $total }} jobs
-                </div>
-                <div class="flex gap-2">
-                    @if($currentPage > 1)
-                        <x-button wire:click="previousPage" icon="o-chevron-left" class="btn-sm" />
-                    @endif
-                    @if($currentPage * $perPage < $total)
-                        <x-button wire:click="nextPage" icon="o-chevron-right" class="btn-sm" />
+        <x-table :headers="$headers" :rows="$jobs" :sort-by="$sortBy" with-pagination>
+            <x-slot:empty>
+                <div class="text-center text-base-content/50 py-8">
+                    @if($search || $statusFilter !== 'all' || $typeFilter !== 'all')
+                        {{ __('No jobs found matching your filters.') }}
+                    @else
+                        {{ __('No jobs yet. Backups and restores will appear here.') }}
                     @endif
                 </div>
-            </div>
-        @endif
+            </x-slot:empty>
+
+            @scope('cell_type', $job)
+                @if($job->snapshot_id)
+                    <x-badge value="{{ __('Backup') }}" class="badge-primary" />
+                @else
+                    <x-badge value="{{ __('Restore') }}" class="badge-secondary" />
+                @endif
+            @endscope
+
+            @scope('cell_started_at', $job)
+                @if($job->started_at)
+                    <div class="table-cell-primary">{{ $job->started_at->format('M d, Y H:i') }}</div>
+                    <div class="text-sm text-base-content/70">{{ $job->started_at->diffForHumans() }}</div>
+                @else
+                    <span class="text-base-content/50">-</span>
+                @endif
+            @endscope
+
+            @scope('cell_server', $job)
+                @if($job->snapshot_id && $job->snapshot)
+                    <div class="table-cell-primary">{{ $job->snapshot->databaseServer->name }}</div>
+                    <div class="text-sm text-base-content/70">
+                        <x-badge :value="$job->snapshot->database_type" class="badge-xs" />
+                        {{ $job->snapshot->database_name }}
+                    </div>
+                @elseif($job->restore_id && $job->restore)
+                    <div class="table-cell-primary">{{ $job->restore->targetServer->name }} (Target)</div>
+                    <div class="text-sm text-base-content/70">
+                        @if($job->restore->snapshot)
+                            <x-badge :value="$job->restore->snapshot->database_type" class="badge-xs" />
+                        @endif
+                        {{ $job->restore->schema_name }}
+                    </div>
+                    @if($job->restore->snapshot && $job->restore->snapshot->databaseServer)
+                        <div class="text-xs text-base-content/50">From: {{ $job->restore->snapshot->databaseServer->name }}</div>
+                    @endif
+                @endif
+            @endscope
+
+            @scope('cell_status', $job)
+                @if($job->status === 'completed')
+                    <x-badge value="{{ __('Completed') }}" class="badge-success" />
+                @elseif($job->status === 'failed')
+                    <x-badge value="{{ __('Failed') }}" class="badge-error" />
+                @elseif($job->status === 'running')
+                    <x-badge value="{{ __('Running') }}" class="badge-warning" />
+                @elseif($job->status === 'queued')
+                    <x-badge value="{{ __('Queued') }}" class="badge-info" />
+                @else
+                    <x-badge value="{{ __('Pending') }}" class="badge-info" />
+                @endif
+
+                @if($job->status === 'failed' && $job->error_message)
+                    <div class="text-xs text-error mt-1" title="{{ $job->error_message }}">
+                        {{ Str::limit($job->error_message, 50) }}
+                    </div>
+                @endif
+            @endscope
+
+            @scope('cell_duration', $job)
+                @if($job->getHumanDuration())
+                    {{ $job->getHumanDuration() }}
+                @else
+                    <span class="text-base-content/50">-</span>
+                @endif
+            @endscope
+
+            @scope('cell_triggered_by', $job)
+                @php
+                    $triggeredBy = $job->snapshot_id ? $job->snapshot?->triggeredBy : $job->restore?->triggeredBy;
+                @endphp
+                @if($triggeredBy)
+                    <div class="flex items-center gap-2">
+                        <x-icon name="o-user" class="w-4 h-4 text-base-content/50" />
+                        {{ $triggeredBy->name }}
+                    </div>
+                @else
+                    <span class="text-base-content/50">-</span>
+                @endif
+            @endscope
+
+            @scope('actions', $job)
+                <div class="flex gap-2 justify-end">
+                    <x-button
+                        icon="o-document-text"
+                        wire:click="viewLogs('{{ $job->id }}')"
+                        tooltip="{{ __('View Logs') }}"
+                        class="btn-ghost btn-sm"
+                        :class="empty($job->logs) ? 'opacity-30' : ''"
+                        :disabled="empty($job->logs)"
+                    />
+                </div>
+            @endscope
+        </x-table>
     </x-card>
 
     <!-- FILTER DRAWER -->
@@ -193,12 +149,14 @@
                 <div class="p-4 bg-base-200 rounded-lg space-y-2">
                     <div class="flex items-center justify-between">
                         <div>
-                            <div class="text-sm text-base-content/70">{{ ucfirst($selectedJobType) }} Job</div>
+                            <div class="text-sm text-base-content/70">
+                                {{ $this->selectedJob->snapshot_id ? 'Backup' : 'Restore' }} Job
+                            </div>
                             <div class="font-semibold">
-                                @if($selectedJobType === 'backup')
-                                    {{ $this->selectedJob->databaseServer->name }} / {{ $this->selectedJob->database_name }}
-                                @else
-                                    {{ $this->selectedJob->targetServer->name }} / {{ $this->selectedJob->schema_name }}
+                                @if($this->selectedJob->snapshot_id && $this->selectedJob->snapshot)
+                                    {{ $this->selectedJob->snapshot->databaseServer->name }} / {{ $this->selectedJob->snapshot->database_name }}
+                                @elseif($this->selectedJob->restore_id && $this->selectedJob->restore)
+                                    {{ $this->selectedJob->restore->targetServer->name }} / {{ $this->selectedJob->restore->schema_name }}
                                 @endif
                             </div>
                         </div>

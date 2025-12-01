@@ -2,6 +2,7 @@
 
 namespace App\Services\Backup;
 
+use App\Models\BackupJob;
 use App\Models\DatabaseServer;
 use App\Models\Snapshot;
 use App\Services\Backup\Databases\MysqlDatabase;
@@ -29,8 +30,14 @@ class BackupTask
         // Create snapshot record
         $snapshot = $this->createSnapshot($databaseServer, $method, $userId);
 
-        // Configure shell processor to log to snapshot
-        $this->shellProcessor->setLogger($snapshot);
+        // Create backup job for this snapshot
+        $job = BackupJob::create([
+            'snapshot_id' => $snapshot->id,
+            'status' => 'pending',
+        ]);
+
+        // Configure shell processor to log to job
+        $this->shellProcessor->setLogger($job);
 
         $workingFile = $workingDirectory.'/'.$snapshot->id.'.sql';
         $filesystem = $this->filesystemProvider->get($databaseServer->backup->volume->type);
@@ -40,8 +47,8 @@ class BackupTask
 
         try {
             // Mark as running
-            $snapshot->update(['status' => 'running']);
-            $snapshot->log("Starting backup for database: {$databaseServer->database_name}", 'info', [
+            $job->markRunning();
+            $job->log("Starting backup for database: {$databaseServer->database_name}", 'info', [
                 'server' => $databaseServer->name,
                 'database' => $databaseServer->database_name,
                 'database_type' => $databaseServer->database_type,
@@ -49,15 +56,15 @@ class BackupTask
             ]);
 
             // Execute backup
-            $snapshot->log('Dumping database to temporary file', 'info');
+            $job->log('Dumping database to temporary file', 'info');
             $this->dumpDatabase($databaseServer, $workingFile);
-            $snapshot->log('Database dump completed successfully', 'success');
+            $job->log('Database dump completed successfully', 'success');
 
-            $snapshot->log('Compressing backup file with gzip', 'info');
+            $job->log('Compressing backup file with gzip', 'info');
             $archive = $this->compress($workingFile);
-            $snapshot->log('Compression completed successfully', 'success');
+            $job->log('Compression completed successfully', 'success');
 
-            $snapshot->log("Transferring backup to volume: {$databaseServer->backup->volume->name}", 'info', [
+            $job->log("Transferring backup to volume: {$databaseServer->backup->volume->name}", 'info', [
                 'volume_type' => $databaseServer->backup->volume->type,
             ]);
             $destinationPath = $this->generateBackupFilename($databaseServer);
@@ -66,7 +73,7 @@ class BackupTask
                 $archive,
                 $destinationPath
             );
-            $snapshot->log('Transfer completed successfully', 'success', [
+            $job->log('Transfer completed successfully', 'success', [
                 'destination_path' => $destinationPath,
             ]);
 
@@ -74,8 +81,8 @@ class BackupTask
             $fileSize = filesize($archive);
             $checksum = hash_file('sha256', $archive);
 
-            $snapshot->log('Calculating file metadata', 'info');
-            $snapshot->log('Backup completed successfully', 'success', [
+            $job->log('Calculating file metadata', 'info');
+            $job->log('Backup completed successfully', 'success', [
                 'file_size' => $fileSize,
                 'checksum' => substr($checksum, 0, 16).'...',
                 'destination' => $destinationPath,
@@ -88,20 +95,21 @@ class BackupTask
                 'checksum' => $checksum,
             ]);
 
-            $snapshot->markCompleted();
+            // Mark job as completed
+            $job->markCompleted();
 
             return $snapshot;
         } catch (\Throwable $e) {
-            $snapshot->log("Backup failed: {$e->getMessage()}", 'error', [
+            $job->log("Backup failed: {$e->getMessage()}", 'error', [
                 'exception' => get_class($e),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            $snapshot->markFailed($e);
+            $job->markFailed($e);
             throw $e;
         } finally {
             // Clean up temporary files
-            $snapshot->log('Cleaning up temporary files', 'info');
+            $job->log('Cleaning up temporary files', 'info');
             if (file_exists($workingFile)) {
                 unlink($workingFile);
             }
@@ -184,10 +192,6 @@ class BackupTask
             'file_size' => 0, // Will be updated after transfer
             'checksum' => null, // Will be updated after transfer
             'started_at' => now(),
-            'completed_at' => null,
-            'status' => 'pending',
-            'error_message' => null,
-            'error_trace' => null,
             'database_name' => $databaseServer->database_name ?? '',
             'database_type' => $databaseServer->database_type,
             'database_host' => $databaseServer->host,

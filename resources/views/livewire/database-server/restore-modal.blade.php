@@ -81,8 +81,8 @@
                                         </div>
                                         <div class="text-sm opacity-50 mt-1">
                                             {{ __('Size:') }} {{ $snapshot->getHumanFileSize() }}
-                                            @if($snapshot->getDurationMs())
-                                                &bull; {{ __('Duration:') }} {{ $snapshot->getHumanDuration() }}
+                                            @if($snapshot->job?->getDurationMs())
+                                                &bull; {{ __('Duration:') }} {{ $snapshot->job->getHumanDuration() }}
                                             @endif
                                         </div>
                                     </div>

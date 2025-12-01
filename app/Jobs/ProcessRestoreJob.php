@@ -2,7 +2,8 @@
 
 namespace App\Jobs;
 
-use App\Models\Restore;
+use App\Models\DatabaseServer;
+use App\Models\Snapshot;
 use App\Services\Backup\RestoreTask;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -31,7 +32,11 @@ class ProcessRestoreJob implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public string $restoreId
+        public string $snapshotId,
+        public string $targetServerId,
+        public string $schemaName,
+        public string $method = 'manual',
+        public ?string $userId = null
     ) {
         $this->onQueue('backups');
     }
@@ -41,54 +46,25 @@ class ProcessRestoreJob implements ShouldQueue
      */
     public function handle(RestoreTask $restoreTask): void
     {
-        // Fetch the restore record with relationships
-        $restore = Restore::with(['snapshot.volume', 'targetServer'])->findOrFail($this->restoreId);
+        // Fetch the snapshot and target server with relationships
+        $snapshot = Snapshot::with(['volume'])->findOrFail($this->snapshotId);
+        $targetServer = DatabaseServer::findOrFail($this->targetServerId);
 
-        // Update restore with job ID and mark as running
-        $restore->update(['job_id' => $this->job->getJobId()]);
-        $restore->markRunning();
+        // Run the restore task (it will create restore and job, handling status updates)
+        $restoreTask->run(
+            targetServer: $targetServer,
+            snapshot: $snapshot,
+            schemaName: $this->schemaName,
+            method: $this->method,
+            userId: $this->userId
+        );
 
-        try {
-            // Log restore start
-            $restore->log('Starting restore operation', 'info', [
-                'snapshot_id' => $restore->snapshot_id,
-                'target_server' => $restore->targetServer->name,
-                'schema_name' => $restore->schema_name,
-            ]);
-
-            // Run the restore task
-            $restoreTask->run(
-                $restore->targetServer,
-                $restore->snapshot,
-                $restore->schema_name,
-                $restore
-            );
-
-            // Mark as completed
-            $restore->log('Restore operation completed successfully', 'success');
-            $restore->markCompleted();
-
-            Log::info('Restore completed successfully', [
-                'restore_id' => $this->restoreId,
-                'snapshot_id' => $restore->snapshot_id,
-                'target_server_id' => $restore->target_server_id,
-                'schema_name' => $restore->schema_name,
-            ]);
-        } catch (\Throwable $exception) {
-            // Mark as failed
-            $restore->markFailed($exception);
-
-            Log::error('Restore job failed', [
-                'restore_id' => $this->restoreId,
-                'snapshot_id' => $restore->snapshot_id,
-                'target_server_id' => $restore->target_server_id,
-                'schema_name' => $restore->schema_name,
-                'error' => $exception->getMessage(),
-            ]);
-
-            // Re-throw to mark job as failed in queue
-            throw $exception;
-        }
+        Log::info('Restore completed successfully', [
+            'snapshot_id' => $this->snapshotId,
+            'target_server_id' => $this->targetServerId,
+            'schema_name' => $this->schemaName,
+            'method' => $this->method,
+        ]);
     }
 
     /**
@@ -96,16 +72,13 @@ class ProcessRestoreJob implements ShouldQueue
      */
     public function failed(\Throwable $exception): void
     {
-        Log::error('Restore job failed permanently', [
-            'restore_id' => $this->restoreId,
+        Log::error('Restore job failed', [
+            'snapshot_id' => $this->snapshotId,
+            'target_server_id' => $this->targetServerId,
+            'schema_name' => $this->schemaName,
+            'method' => $this->method,
             'error' => $exception->getMessage(),
             'trace' => $exception->getTraceAsString(),
         ]);
-
-        // Ensure restore is marked as failed
-        $restore = Restore::find($this->restoreId);
-        if ($restore && $restore->status !== 'failed') {
-            $restore->markFailed($exception);
-        }
     }
 }

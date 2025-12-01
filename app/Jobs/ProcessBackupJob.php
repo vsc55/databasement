@@ -55,16 +55,21 @@ class ProcessBackupJob implements ShouldQueue
             throw new \RuntimeException('No backup configuration found for this database server.');
         }
 
-        // If snapshot was pre-created, fetch it; otherwise BackupTask will create it
+        // If snapshot was pre-created, fetch it and update its job with the queue job ID
         if ($this->snapshotId) {
-            $snapshot = Snapshot::findOrFail($this->snapshotId);
+            $snapshot = Snapshot::with('job')->findOrFail($this->snapshotId);
 
-            // Update snapshot with job ID
-            $snapshot->update(['job_id' => $this->job->getJobId()]);
+            if ($snapshot->job) {
+                $snapshot->job->update(['job_id' => $this->job->getJobId()]);
+            }
         }
 
-        // Run the backup task (it will handle snapshot creation and status updates)
-        $backupTask->run($databaseServer, $this->method, $this->userId);
+        // Run the backup task (it will create snapshot and job, handling status updates)
+        $backupTask->run(
+            databaseServer: $databaseServer,
+            method: $this->method,
+            userId: $this->userId
+        );
 
         Log::info('Backup completed successfully', [
             'database_server_id' => $this->databaseServerId,
@@ -84,11 +89,11 @@ class ProcessBackupJob implements ShouldQueue
             'trace' => $exception->getTraceAsString(),
         ]);
 
-        // If snapshot was pre-created, mark it as failed
+        // If snapshot was pre-created, mark its job as failed
         if ($this->snapshotId) {
-            $snapshot = Snapshot::find($this->snapshotId);
-            if ($snapshot && $snapshot->status !== 'failed') {
-                $snapshot->markFailed($exception);
+            $snapshot = Snapshot::with('job')->find($this->snapshotId);
+            if ($snapshot && $snapshot->job && $snapshot->job->status !== 'failed') {
+                $snapshot->job->markFailed($exception);
             }
         }
     }

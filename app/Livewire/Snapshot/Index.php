@@ -125,7 +125,7 @@ class Index extends Component
     public function render()
     {
         $snapshots = Snapshot::query()
-            ->with(['databaseServer', 'backup', 'volume', 'triggeredBy'])
+            ->with(['databaseServer', 'backup', 'volume', 'triggeredBy', 'job'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->whereHas('databaseServer', function ($sq) {
@@ -137,7 +137,7 @@ class Index extends Component
                 });
             })
             ->when($this->statusFilter !== 'all', function ($query) {
-                $query->where('status', $this->statusFilter);
+                $query->whereHas('job', fn ($q) => $q->where('status', $this->statusFilter));
             })
             ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
             ->paginate(15);

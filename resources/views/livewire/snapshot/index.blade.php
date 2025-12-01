@@ -37,20 +37,22 @@
             @endscope
 
             @scope('cell_status', $snapshot)
-                @if($snapshot->status === 'completed')
+                @if($snapshot->job && $snapshot->job->status === 'completed')
                     <x-badge value="{{ __('Completed') }}" class="badge-success" />
-                @elseif($snapshot->status === 'failed')
+                @elseif($snapshot->job && $snapshot->job->status === 'failed')
                     <x-badge value="{{ __('Failed') }}" class="badge-error" />
-                @elseif($snapshot->status === 'running')
+                @elseif($snapshot->job && $snapshot->job->status === 'running')
                     <x-badge value="{{ __('Running') }}" class="badge-warning" />
-                @else
+                @elseif($snapshot->job)
                     <x-badge value="{{ __('Pending') }}" class="badge-info" />
+                @else
+                    <x-badge value="{{ __('No Job') }}" class="badge-ghost" />
                 @endif
             @endscope
 
             @scope('cell_duration', $snapshot)
-                @if($snapshot->getHumanDuration())
-                    {{ $snapshot->getHumanDuration() }}
+                @if($snapshot->job && $snapshot->job->getHumanDuration())
+                    {{ $snapshot->job->getHumanDuration() }}
                 @else
                     <span class="text-base-content/50">-</span>
                 @endif
@@ -69,7 +71,7 @@
 
             @scope('actions', $snapshot)
                 <div class="flex gap-2 justify-end">
-                    @if($snapshot->status === 'completed')
+                    @if($snapshot->job && $snapshot->job->status === 'completed')
                         <x-button
                             icon="o-arrow-down-tray"
                             wire:click="download('{{ $snapshot->id }}')"
