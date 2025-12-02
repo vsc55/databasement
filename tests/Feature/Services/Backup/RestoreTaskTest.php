@@ -9,7 +9,6 @@ use App\Services\Backup\Databases\PostgresqlDatabase;
 use App\Services\Backup\Filesystems\FilesystemProvider;
 use App\Services\Backup\GzipCompressor;
 use App\Services\Backup\RestoreTask;
-use App\Services\DatabaseConnectionTester;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\TestShellProcessor;
 
@@ -19,12 +18,11 @@ beforeEach(function () {
     // Use REAL services for command building
     $this->mysqlDatabase = new MysqlDatabase;  // ✓ Real command building
     $this->postgresqlDatabase = new PostgresqlDatabase;  // ✓ Real command building
-    $this->compressor = new GzipCompressor;  // ✓ Real path manipulation
     $this->shellProcessor = new TestShellProcessor;  // ✓ Captures commands without executing
+    $this->compressor = new GzipCompressor($this->shellProcessor);  // ✓ Real path manipulation
 
     // Mock external dependencies only
     $this->filesystemProvider = Mockery::mock(FilesystemProvider::class);
-    $this->connectionTester = Mockery::mock(DatabaseConnectionTester::class);
 
     // Create a partial mock of RestoreTask to mock prepareDatabase
     $this->restoreTask = Mockery::mock(
@@ -35,7 +33,6 @@ beforeEach(function () {
             $this->shellProcessor,
             $this->filesystemProvider,
             $this->compressor,
-            $this->connectionTester,
         ]
     )->makePartial()
         ->shouldAllowMockingProtectedMethods();
@@ -96,11 +93,6 @@ function setupRestoreExpectations(
     Snapshot $snapshot,
     string $schemaName
 ): void {
-    // Connection test
-    test()->connectionTester
-        ->shouldReceive('test')
-        ->once()
-        ->andReturn(['success' => true, 'message' => 'Connected']);
 
     // Mock prepareDatabase to avoid real database operations
     test()->restoreTask
@@ -167,12 +159,11 @@ test('run executes mysql restore workflow successfully', function () {
 
     // Build expected file paths
     $compressedFile = $this->tempDir.'/backup.sql.gz';
-    $tempCompressed = $compressedFile.'.tmp.gz';
-    $decompressedFile = $this->tempDir.'/backup.sql.gz.tmp';
+    $decompressedFile = $this->tempDir.'/backup.sql';
 
     // Expected commands
     $expectedCommands = [
-        "gzip -d '$tempCompressed'",
+        "gzip -d '$compressedFile'",
         "mariadb --host='target.localhost' --port='3306' --user='root' --password='secret' --skip_ssl 'restored_db' -e \"source $decompressedFile\"",
     ];
 
@@ -215,12 +206,11 @@ test('run executes postgresql restore workflow successfully', function () {
 
     // Build expected file paths
     $compressedFile = $this->tempDir.'/pg_backup.sql.gz';
-    $tempCompressed = $compressedFile.'.tmp.gz';
-    $decompressedFile = $this->tempDir.'/pg_backup.sql.gz.tmp';
+    $decompressedFile = $this->tempDir.'/pg_backup.sql';
 
     // Expected commands (PostgreSQL uses escapeshellarg on paths, adding quotes)
     $expectedCommands = [
-        "gzip -d '$tempCompressed'",
+        "gzip -d '$compressedFile'",
         "PGPASSWORD='secret' psql --host='target.localhost' --port='5432' --user='postgres' 'restored_db' -f '$decompressedFile'",
     ];
 
@@ -257,11 +247,11 @@ test('run throws exception when database types are incompatible', function () {
         ->toThrow(\Exception::class, 'Cannot restore mysql snapshot to postgresql server');
 });
 
-test('run throws exception when connection test fails', function () {
+test('run throws exception when restore command failed', function () {
     // Arrange
     $sourceServer = createRestoreDatabaseServer([
         'name' => 'Source MySQL',
-        'host' => 'localhost',
+        'host' => 'source.localhost',
         'port' => 3306,
         'database_type' => 'mysql',
         'username' => 'root',
@@ -271,25 +261,86 @@ test('run throws exception when connection test fails', function () {
 
     $targetServer = createRestoreDatabaseServer([
         'name' => 'Target MySQL',
-        'host' => 'localhost',
+        'host' => 'target.localhost',
         'port' => 3306,
         'database_type' => 'mysql',
         'username' => 'root',
-        'password' => 'wrongpassword',
+        'password' => 'secret',
         'database_name' => 'targetdb',
     ]);
 
-    $snapshot = createRestoreSnapshot($sourceServer);
+    $snapshot = createRestoreSnapshot($sourceServer, ['path' => 'backup.sql.gz']);
 
-    // Connection test fails
-    $this->connectionTester
-        ->shouldReceive('test')
+    // Create a shell processor that fails on restore command (the second call after decompress)
+    $shellProcessor = Mockery::mock(\App\Services\Backup\ShellProcessor::class);
+    $shellProcessor->shouldReceive('setLogger')->once();
+    $shellProcessor->shouldReceive('process')
         ->once()
-        ->andReturn(['success' => false, 'message' => 'Access denied']);
+        ->andThrow(new \App\Exceptions\ShellProcessFailed('Access denied for user'));
+
+    // Mock compressor to skip decompression and simulate decompressed file
+    $compressor = Mockery::mock(\App\Services\Backup\GzipCompressor::class);
+    $compressor->shouldReceive('decompress')
+        ->once()
+        ->andReturnUsing(function ($compressedFile) {
+            $decompressedFile = preg_replace('/\.gz$/', '', $compressedFile);
+            file_put_contents($decompressedFile, "-- Fake decompressed data\n");
+
+            return $decompressedFile;
+        });
+
+    // Recreate RestoreTask with mocked shell processor and compressor
+    $restoreTask = Mockery::mock(
+        \App\Services\Backup\RestoreTask::class,
+        [
+            $this->mysqlDatabase,
+            $this->postgresqlDatabase,
+            $shellProcessor,
+            $this->filesystemProvider,
+            $compressor,
+        ]
+    )->makePartial()
+        ->shouldAllowMockingProtectedMethods();
+
+    // Mock prepareDatabase
+    $restoreTask
+        ->shouldReceive('prepareDatabase')
+        ->once()
+        ->andReturnNull();
+
+    // Mock download
+    $this->filesystemProvider
+        ->shouldReceive('download')
+        ->once()
+        ->andReturnUsing(function ($snap, $destination) {
+            file_put_contents($destination, 'compressed backup data');
+        });
+
+    // Count jobs before to find the new one created during restore
+    $jobCountBefore = \App\Models\BackupJob::count();
 
     // Act & Assert
-    expect(fn () => $this->restoreTask->run($targetServer, $snapshot, 'restored_db'))
-        ->toThrow(\Exception::class, 'Failed to connect to target server: Access denied');
+    $exception = null;
+    try {
+        $restoreTask->run($targetServer, $snapshot, 'restored_db', $this->tempDir);
+    } catch (\App\Exceptions\ShellProcessFailed $e) {
+        $exception = $e;
+    }
+
+    expect($exception)->not->toBeNull();
+    expect($exception->getMessage())->toBe('Access denied for user');
+
+    // Verify the job status is set to failed
+    // Get the restore job (should have a restore relationship)
+    $restore = \App\Models\Restore::whereSnapshotId($snapshot->id)->first();
+    $job = $restore->job;
+
+    // Ensure we got the new job
+    expect(\App\Models\BackupJob::count())->toBe($jobCountBefore + 1);
+    expect($job)->not->toBeNull();
+    expect($job->status)->toBe('failed');
+    expect($job->error_message)->toBe('Access denied for user');
+    expect($job->completed_at)->not->toBeNull();
 });
 
 test('run throws exception for unsupported database type', function () {
@@ -315,12 +366,6 @@ test('run throws exception for unsupported database type', function () {
     ]);
 
     $snapshot = createRestoreSnapshot($sourceServer, ['database_type' => 'oracle']);
-
-    // Connection test succeeds but database type is not supported
-    $this->connectionTester
-        ->shouldReceive('test')
-        ->once()
-        ->andReturn(['success' => true, 'message' => 'Connected']);
 
     $this->filesystemProvider
         ->shouldReceive('download')

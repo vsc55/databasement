@@ -3,7 +3,6 @@
 namespace Tests\Support;
 
 use App\Services\Backup\ShellProcessor;
-use Symfony\Component\Process\Process;
 
 /**
  * Test double for ShellProcessor that captures commands without executing them
@@ -13,15 +12,13 @@ class TestShellProcessor extends ShellProcessor
 {
     public array $executedCommands = [];
 
-    public function process(Process $process): string
+    public function process(string $command): string
     {
-        $commandLine = $process->getCommandLine();
-
         // Capture the command
-        $this->executedCommands[] = $commandLine;
+        $this->executedCommands[] = $command;
 
         // Simulate file creation based on command patterns
-        $this->simulateCommandEffects($commandLine);
+        $this->simulateCommandEffects($command);
 
         return 'fake output';
     }

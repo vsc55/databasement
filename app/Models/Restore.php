@@ -8,21 +8,34 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string $id
- * @property string $backup_job_id
  * @property string $snapshot_id
  * @property string $target_server_id
  * @property string $schema_name
  * @property string|null $triggered_by_user_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string $backup_job_id
+ * @property-read \App\Models\BackupJob $job
  * @property-read \App\Models\Snapshot $snapshot
  * @property-read \App\Models\DatabaseServer $targetServer
  * @property-read \App\Models\User|null $triggeredBy
- * @property-read \App\Models\BackupJob $job
  *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore completed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore failed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore pending()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore queued()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore running()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore whereBackupJobId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore whereSchemaName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore whereSnapshotId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore whereTargetServerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore whereTriggeredByUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Restore whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */

@@ -2,34 +2,28 @@
 
 namespace App\Services\Backup;
 
-use App\Contracts\JobInterface;
 use App\Exceptions\ShellProcessFailed;
+use App\Models\BackupJob;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
 
 class ShellProcessor
 {
-    private ?JobInterface $logger = null;
+    private ?BackupJob $logger = null;
 
-    public function setLogger(JobInterface $logger): void
+    public function setLogger(BackupJob $logger): void
     {
         $this->logger = $logger;
     }
 
-    public function process(Process $process): string
+    public function process(string $command): string
     {
+        $process = Process::fromShellCommandline($command);
         $process->setTimeout(null);
 
-        $commandLine = $process->getCommandLine();
-
         // Mask sensitive data in command line for logging
-        $sanitizedCommand = $this->sanitizeCommand($commandLine);
-
-        // Log command execution start
-        if ($this->logger) {
-            $this->logger->log('Executing command', 'info');
-        }
-
+        $sanitizedCommand = $this->sanitizeCommand($command);
+        $startTime = microtime(true);
         $process->run();
 
         $output = $process->getOutput();
@@ -39,16 +33,11 @@ class ShellProcessor
         // Log the command and result
         if ($this->logger) {
             $combinedOutput = trim($output."\n".$errorOutput);
-            $this->logger->logCommand($sanitizedCommand, $combinedOutput, $exitCode);
+            $this->logger->logCommand($sanitizedCommand, $combinedOutput, $exitCode, $startTime);
         }
 
         if (! $process->isSuccessful()) {
-            Log::error($commandLine."\n".$errorOutput);
-
-            if ($this->logger) {
-                $this->logger->log("Command failed with exit code {$exitCode}", 'error', ['exit_code' => $exitCode]);
-            }
-
+            Log::error($command."\n".$errorOutput);
             throw new ShellProcessFailed($errorOutput);
         }
 

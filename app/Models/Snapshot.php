@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string $id
- * @property string $backup_job_id
  * @property string $database_server_id
  * @property string $backup_id
  * @property string $volume_id
@@ -26,15 +25,40 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $triggered_by_user_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\DatabaseServer $databaseServer
+ * @property string $backup_job_id
  * @property-read \App\Models\Backup $backup
- * @property-read \App\Models\Volume $volume
- * @property-read \App\Models\User|null $triggeredBy
+ * @property-read \App\Models\DatabaseServer $databaseServer
  * @property-read \App\Models\BackupJob $job
+ * @property-read \App\Models\User|null $triggeredBy
+ * @property-read \App\Models\Volume $volume
  *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot completed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot failed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot forDatabaseServer(\App\Models\DatabaseServer $databaseServer)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot pending()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot running()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereBackupId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereBackupJobId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereChecksum($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereCompressionType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereDatabaseHost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereDatabaseName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereDatabasePort($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereDatabaseServerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereDatabaseSizeBytes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereDatabaseType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereFileSize($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereMethod($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot wherePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereStartedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereTriggeredByUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Snapshot whereVolumeId($value)
  *
  * @mixin \Eloquent
  */

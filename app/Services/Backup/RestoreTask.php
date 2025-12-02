@@ -9,10 +9,8 @@ use App\Models\Snapshot;
 use App\Services\Backup\Databases\MysqlDatabase;
 use App\Services\Backup\Databases\PostgresqlDatabase;
 use App\Services\Backup\Filesystems\FilesystemProvider;
-use App\Services\DatabaseConnectionTester;
 use PDO;
 use PDOException;
-use Symfony\Component\Process\Process;
 
 class RestoreTask
 {
@@ -21,8 +19,7 @@ class RestoreTask
         private readonly PostgresqlDatabase $postgresqlDatabase,
         private readonly ShellProcessor $shellProcessor,
         private readonly FilesystemProvider $filesystemProvider,
-        private readonly GzipCompressor $compressor,
-        private readonly DatabaseConnectionTester $connectionTester
+        private readonly GzipCompressor $compressor
     ) {}
 
     /**
@@ -38,6 +35,8 @@ class RestoreTask
         string $method = 'manual',
         ?string $userId = null
     ): Restore {
+        $this->validateCompatibility($targetServer, $snapshot);
+
         // Create backup job first (required for restore)
         $job = BackupJob::create([
             'status' => 'pending',
@@ -49,31 +48,29 @@ class RestoreTask
         // Configure shell processor to log to job
         $this->shellProcessor->setLogger($job);
 
-        $compressedFile = null;
         $workingFile = null;
 
         try {
             // Mark as running
             $job->markRunning();
             $job->log('Starting restore operation', 'info', [
-                'snapshot_id' => $snapshot->id,
-                'target_server' => $targetServer->name,
-                'schema_name' => $schemaName,
+                'target_database_server' => [
+                    'id' => $targetServer->id,
+                    'name' => $targetServer->name,
+                    'database_name' => $schemaName,
+                    'database_type' => $targetServer->database_type,
+                ],
+                'snapshot' => [
+                    'id' => $snapshot->id,
+                    'database_server' => [
+                        'id' => $snapshot->databaseServer->id,
+                        'name' => $snapshot->databaseServer->name,
+                        'database_name' => $snapshot->databaseServer->database_name,
+                        'database_type' => $snapshot->databaseServer->database_type,
+                    ],
+                ],
                 'method' => $method,
             ]);
-
-            // Validate compatibility
-            $job->log('Validating database compatibility', 'info');
-            $this->validateCompatibility($targetServer, $snapshot);
-            $job->log('Database types are compatible', 'success', [
-                'source_type' => $snapshot->database_type,
-                'target_type' => $targetServer->database_type,
-            ]);
-
-            // Test connection to target server
-            $job->log("Testing connection to target server: {$targetServer->name}", 'info');
-            $this->testConnection($targetServer);
-            $job->log('Connection test successful', 'success');
 
             // Download snapshot from volume
             $job->log("Downloading snapshot from volume: {$snapshot->volume->name}", 'info', [
@@ -85,41 +82,22 @@ class RestoreTask
             $job->log('Snapshot downloaded successfully', 'success', [
                 'file_size' => filesize($compressedFile),
             ]);
-
-            // Decompress the file
-            $job->log('Decompressing snapshot file', 'info');
-            $workingFile = $this->decompress($compressedFile);
-            $job->log('Decompression completed successfully', 'success', [
-                'decompressed_size' => filesize($workingFile),
-            ]);
-
-            // Drop and recreate the database
-            $job->log("Preparing target database: {$schemaName}", 'info');
+            $workingFile = $this->compressor->decompress($compressedFile);
             $this->prepareDatabase($targetServer, $schemaName, $job);
-            $job->log('Database prepared successfully', 'success');
-
-            // Configure database interface with target server credentials
             $this->configureDatabaseInterface($targetServer, $schemaName);
-
-            // Restore the database
             $job->log('Restoring database from snapshot', 'info', [
                 'source_database' => $snapshot->database_name,
                 'target_database' => $schemaName,
             ]);
             $this->restoreDatabase($targetServer, $workingFile);
-            $job->log('Database restore completed successfully', 'success');
 
-            // Clean up temporary files
+            // Clean up temporary files (compressed file already deleted by gzip -d)
             $job->log('Cleaning up temporary files', 'info');
-            if (file_exists($compressedFile)) {
-                unlink($compressedFile);
-            }
             if (file_exists($workingFile)) {
                 unlink($workingFile);
             }
 
             // Mark job as completed
-            $job->log('Restore operation completed successfully', 'success');
             $job->markCompleted();
 
             return $restore;
@@ -133,9 +111,6 @@ class RestoreTask
             throw $e;
         } finally {
             // Ensure cleanup happens even on failure
-            if ($compressedFile !== null && file_exists($compressedFile)) {
-                unlink($compressedFile);
-            }
             if ($workingFile !== null && file_exists($workingFile)) {
                 unlink($workingFile);
             }
@@ -149,52 +124,6 @@ class RestoreTask
                 "Cannot restore {$snapshot->database_type} snapshot to {$targetServer->database_type} server"
             );
         }
-    }
-
-    private function testConnection(DatabaseServer $targetServer): void
-    {
-        // For connection test, use existing database or default system database
-        $testDatabase = match ($targetServer->database_type) {
-            'mysql', 'mariadb' => $targetServer->database_name ?? 'mysql',
-            'postgresql' => $targetServer->database_name ?? 'postgres',
-            default => $targetServer->database_name,
-        };
-
-        $result = $this->connectionTester->test([
-            'database_type' => $targetServer->database_type,
-            'host' => $targetServer->host,
-            'port' => $targetServer->port,
-            'username' => $targetServer->username,
-            'password' => $targetServer->password,
-            'database_name' => $testDatabase,
-        ]);
-
-        if (! $result['success']) {
-            throw new \Exception("Failed to connect to target server: {$result['message']}");
-        }
-    }
-
-    private function decompress(string $compressedFile): string
-    {
-        // Copy the compressed file to a temporary location for decompression
-        $tempCompressed = $compressedFile.'.tmp.gz';
-        copy($compressedFile, $tempCompressed);
-
-        $this->shellProcessor->process(
-            Process::fromShellCommandline(
-                $this->compressor->getDecompressCommandLine($tempCompressed)
-            )
-        );
-
-        // After decompression, the file will be without .gz extension
-        $decompressedFile = $this->compressor->getDecompressedPath($tempCompressed);
-
-        if (! file_exists($decompressedFile)) {
-            throw new \RuntimeException('Decompression failed: output file not found');
-        }
-
-        // Move to final location
-        return $decompressedFile;
     }
 
     protected function prepareDatabase(DatabaseServer $targetServer, string $schemaName, BackupJob $job): void
@@ -216,13 +145,11 @@ class RestoreTask
     {
         // Drop database if exists
         $dropCommand = "DROP DATABASE IF EXISTS `{$schemaName}`";
-        $job->log('Dropping existing database if exists', 'info');
         $job->logCommand($dropCommand, null, 0);
         $pdo->exec($dropCommand);
 
         // Create new database
         $createCommand = "CREATE DATABASE `{$schemaName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
-        $job->log('Creating new database', 'info');
         $job->logCommand($createCommand, null, 0);
         $pdo->exec($createCommand);
     }
@@ -244,39 +171,25 @@ class RestoreTask
 
             // Drop the database
             $dropCommand = "DROP DATABASE IF EXISTS \"{$schemaName}\"";
-            $job->log('Dropping existing database', 'info');
             $job->logCommand($dropCommand, null, 0);
             $pdo->exec($dropCommand);
         }
 
         // Create new database
         $createCommand = "CREATE DATABASE \"{$schemaName}\"";
-        $job->log('Creating new database', 'info');
         $job->logCommand($createCommand, null, 0);
         $pdo->exec($createCommand);
     }
 
     private function restoreDatabase(DatabaseServer $targetServer, string $inputPath): void
     {
-        switch ($targetServer->database_type) {
-            case 'mysql':
-            case 'mariadb':
-                $this->shellProcessor->process(
-                    Process::fromShellCommandline(
-                        $this->mysqlDatabase->getRestoreCommandLine($inputPath)
-                    )
-                );
-                break;
-            case 'postgresql':
-                $this->shellProcessor->process(
-                    Process::fromShellCommandline(
-                        $this->postgresqlDatabase->getRestoreCommandLine($inputPath)
-                    )
-                );
-                break;
-            default:
-                throw new \Exception("Database type {$targetServer->database_type} not supported");
-        }
+        $command = match ($targetServer->database_type) {
+            'mysql', 'mariadb' => $this->mysqlDatabase->getRestoreCommandLine($inputPath),
+            'postgresql' => $this->postgresqlDatabase->getRestoreCommandLine($inputPath),
+            default => throw new \Exception("Database type {$targetServer->database_type} not supported"),
+        };
+
+        $this->shellProcessor->process($command);
     }
 
     private function configureDatabaseInterface(DatabaseServer $targetServer, string $schemaName): void

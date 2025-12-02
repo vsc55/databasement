@@ -19,8 +19,8 @@ beforeEach(function () {
     // Use REAL services for command building
     $this->mysqlDatabase = new MysqlDatabase;  // ✓ Real command building
     $this->postgresqlDatabase = new PostgresqlDatabase;  // ✓ Real command building
-    $this->compressor = new GzipCompressor;  // ✓ Real path manipulation
     $this->shellProcessor = new TestShellProcessor;  // ✓ Captures commands without executing
+    $this->compressor = new GzipCompressor($this->shellProcessor);  // ✓ Real path manipulation
 
     // Mock external dependencies only
     $this->filesystemProvider = Mockery::mock(FilesystemProvider::class);
@@ -210,4 +210,67 @@ test('run throws exception for unsupported database type', function () {
     // Act & Assert
     expect(fn () => $this->backupTask->run($databaseServer))
         ->toThrow(\Exception::class, 'Database type oracle not supported');
+});
+
+test('run throws exception when backup command failed', function () {
+    // Arrange
+    $databaseServer = createDatabaseServer([
+        'name' => 'Production MySQL',
+        'host' => 'localhost',
+        'port' => 3306,
+        'database_type' => 'mysql',
+        'username' => 'root',
+        'password' => 'secret',
+        'database_name' => 'myapp',
+    ]);
+
+    // Create a shell processor that fails on dump command
+    $shellProcessor = Mockery::mock(\App\Services\Backup\ShellProcessor::class);
+    $shellProcessor->shouldReceive('setLogger')->once();
+    $shellProcessor->shouldReceive('process')
+        ->once()
+        ->andThrow(new \App\Exceptions\ShellProcessFailed('Access denied for user'));
+
+    // Create BackupTask with mocked shell processor
+    $backupTask = new BackupTask(
+        $this->mysqlDatabase,
+        $this->postgresqlDatabase,
+        $shellProcessor,
+        $this->filesystemProvider,
+        $this->compressor,
+        $this->databaseSizeCalculator
+    );
+
+    // Set up expectations for operations before the failure
+    $this->databaseSizeCalculator
+        ->shouldReceive('calculate')
+        ->once()
+        ->with($databaseServer)
+        ->andReturn(1024000);
+
+    // Count jobs before to verify a new one is created
+    $jobCountBefore = \App\Models\BackupJob::count();
+
+    // Act & Assert
+    $exception = null;
+    try {
+        $backupTask->run($databaseServer, $this->tempDir);
+    } catch (\App\Exceptions\ShellProcessFailed $e) {
+        $exception = $e;
+    }
+
+    expect($exception)->not->toBeNull();
+    expect($exception->getMessage())->toBe('Access denied for user');
+
+    // Verify the job status is set to failed
+    // Get the backup job (should have a snapshot relationship)
+    $snapshot = \App\Models\Snapshot::whereDatabaseServerId($databaseServer->id)->first();
+    $job = $snapshot->job;
+
+    // Ensure we got the new job
+    expect(\App\Models\BackupJob::count())->toBe($jobCountBefore + 1);
+    expect($job)->not->toBeNull();
+    expect($job->status)->toBe('failed');
+    expect($job->error_message)->toBe('Access denied for user');
+    expect($job->completed_at)->not->toBeNull();
 });

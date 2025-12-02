@@ -15,9 +15,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\DatabaseServer $databaseServer
- * @property-read \App\Models\Volume $volume
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Snapshot> $snapshots
  * @property-read int|null $snapshots_count
+ * @property-read \App\Models\Volume $volume
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Backup newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Backup newQuery()

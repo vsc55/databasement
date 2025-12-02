@@ -60,7 +60,8 @@
                                 $isError = ($log['type'] === 'command' && isset($log['exit_code']) && $log['exit_code'] !== 0) ||
                                            ($log['type'] !== 'command' && ($log['level'] ?? '') === 'error');
                                 $isWarning = $log['type'] !== 'command' && ($log['level'] ?? '') === 'warning';
-                                $isSuccess = $log['type'] !== 'command' && ($log['level'] ?? '') === 'success';
+                                $isSuccess = ($log['type'] === 'command' && isset($log['exit_code']) && $log['exit_code'] === 0) ||
+                                             ($log['type'] !== 'command' && ($log['level'] ?? '') === 'success');
                                 $timestamp = \Carbon\Carbon::parse($log['timestamp']);
                                 $logLevel = $log['type'] === 'command' ? 'command' : ($log['level'] ?? 'info');
                                 $hasDetails = $log['type'] === 'command' || (isset($log['context']) && !empty($log['context']));
@@ -77,7 +78,11 @@
                                                 <div class="flex-1 px-4 flex items-center gap-3">
                                                     <span class="text-sm truncate {{ $isError ? 'text-error' : '' }}">
                                                         @if($log['type'] === 'command')
-                                                            <code class="text-primary">{{ Str::limit($log['command'], 80) }}</code>
+                                                            <div class="flex items-center">
+                                                                <x-heroicon-c-window
+                                                                    class="w-4 h-4 mr-1 "/>
+                                                                <code class="text-primary">{{ Str::limit($log['command'], 80) }}</code>
+                                                            </div>
                                                         @else
                                                             {{ $log['message'] }}
                                                         @endif
@@ -115,15 +120,23 @@
                                                                 <pre class="text-base-content/80 whitespace-pre-wrap">{{ trim($log['output']) }}</pre>
                                                             </div>
                                                         </div>
+                                                    @else
+                                                        <div class="text-xs text-base-content/50 mb-1">{{ __('No output') }}</div>
                                                     @endif
 
-                                                    @if(isset($log['exit_code']) && $log['exit_code'] !== null)
+                                                    @if(isset($log['exit_code']) || isset($log['duration_ms']))
                                                         <div class="flex items-center gap-2">
-                                                            <span class="text-xs text-base-content/50">{{ __('Exit code') }}:</span>
-                                                            <x-badge
-                                                                :value="$log['exit_code']"
-                                                                :class="$log['exit_code'] === 0 ? 'badge-success badge-sm' : 'badge-error badge-sm'"
-                                                            />
+                                                            @if(isset($log['exit_code']))
+                                                                <span class="text-xs text-base-content/50">{{ __('Exit code') }}:</span>
+                                                                <x-badge
+                                                                    :value="$log['exit_code']"
+                                                                    :class="$log['exit_code'] === 0 ? 'badge-success badge-sm' : 'badge-error badge-sm'"
+                                                                />
+                                                            @endif
+                                                            @if(isset($log['duration_ms']))
+                                                                <span class="text-xs text-base-content/50">{{ __('Duration') }}:</span>
+                                                                <span class="text-xs text-base-content/80">{{ $log['duration_ms'] }}ms</span>
+                                                            @endif
                                                         </div>
                                                     @endif
                                                 @else

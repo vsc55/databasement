@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Contracts\JobInterface;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -15,19 +14,34 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property \Illuminate\Support\Carbon|null $completed_at
  * @property string|null $error_message
  * @property string|null $error_trace
- * @property array|null $logs
+ * @property array<array-key, mixed>|null $logs
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Snapshot|null $snapshot
  * @property-read \App\Models\Restore|null $restore
+ * @property-read \App\Models\Snapshot|null $snapshot
  *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob completed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob failed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob pending()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob queued()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob running()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob whereCompletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob whereErrorMessage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob whereErrorTrace($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob whereJobId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob whereLogs($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob whereStartedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BackupJob whereUpdatedAt($value)
  *
  * @mixin \Eloquent
  */
-class BackupJob extends Model implements JobInterface
+class BackupJob extends Model
 {
     use HasUlids;
 
@@ -137,7 +151,7 @@ class BackupJob extends Model implements JobInterface
     /**
      * Add a command log entry
      */
-    public function logCommand(string $command, ?string $output = null, ?int $exitCode = null): void
+    public function logCommand(string $command, ?string $output = null, ?int $exitCode = null, ?float $startTime = null): void
     {
         $logs = $this->logs ?? [];
 
@@ -147,6 +161,7 @@ class BackupJob extends Model implements JobInterface
             'command' => $command,
             'output' => $output,
             'exit_code' => $exitCode,
+            'duration_ms' => $startTime ? round((microtime(true) - $startTime) * 1000, 2) : null,
         ];
 
         $this->update(['logs' => $logs]);

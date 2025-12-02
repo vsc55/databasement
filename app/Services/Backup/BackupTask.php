@@ -8,7 +8,6 @@ use App\Models\Snapshot;
 use App\Services\Backup\Databases\MysqlDatabase;
 use App\Services\Backup\Databases\PostgresqlDatabase;
 use App\Services\Backup\Filesystems\FilesystemProvider;
-use Symfony\Component\Process\Process;
 
 class BackupTask
 {
@@ -20,6 +19,11 @@ class BackupTask
         private readonly GzipCompressor $compressor,
         private readonly DatabaseSizeCalculator $databaseSizeCalculator
     ) {}
+
+    public function setLogger(BackupJob $job): void
+    {
+        $this->shellProcessor->setLogger($job);
+    }
 
     public function run(
         DatabaseServer $databaseServer,
@@ -36,7 +40,7 @@ class BackupTask
         $snapshot = $this->createSnapshot($databaseServer, $job, $method, $userId);
 
         // Configure shell processor to log to job
-        $this->shellProcessor->setLogger($job);
+        $this->setLogger($job);
 
         $workingFile = $workingDirectory.'/'.$snapshot->id.'.sql';
 
@@ -47,20 +51,22 @@ class BackupTask
             // Mark as running
             $job->markRunning();
             $job->log("Starting backup for database: {$databaseServer->database_name}", 'info', [
-                'server' => $databaseServer->name,
-                'database' => $databaseServer->database_name,
-                'database_type' => $databaseServer->database_type,
+                'database_server' => [
+                    'id' => $databaseServer->id,
+                    'name' => $databaseServer->name,
+                    'database_name' => $databaseServer->database_name,
+                    'database_type' => $databaseServer->database_type,
+                ],
+                'volume' => [
+                    'id' => $databaseServer->backup->volume_id,
+                    'type' => $databaseServer->backup->volume->type,
+                    'config' => $databaseServer->backup->volume->config,
+                ],
                 'method' => $method,
             ]);
 
-            // Execute backup
-            $job->log('Dumping database to temporary file', 'info');
             $this->dumpDatabase($databaseServer, $workingFile);
-            $job->log('Database dump completed successfully', 'success');
-
-            $job->log('Compressing backup file with gzip', 'info');
-            $archive = $this->compress($workingFile);
-            $job->log('Compression completed successfully', 'success');
+            $archive = $this->compressor->compress($workingFile);
 
             $job->log("Transferring backup to volume: {$databaseServer->backup->volume->name}", 'info', [
                 'volume_type' => $databaseServer->backup->volume->type,
@@ -79,7 +85,6 @@ class BackupTask
             $fileSize = filesize($archive);
             $checksum = hash_file('sha256', $archive);
 
-            $job->log('Calculating file metadata', 'info');
             $job->log('Backup completed successfully', 'success', [
                 'file_size' => $fileSize,
                 'checksum' => substr($checksum, 0, 16).'...',
@@ -119,36 +124,13 @@ class BackupTask
 
     private function dumpDatabase(DatabaseServer $databaseServer, string $outputPath): void
     {
-        switch ($databaseServer->database_type) {
-            case 'mysql':
-            case 'mariadb':
-                $this->shellProcessor->process(
-                    Process::fromShellCommandline(
-                        $this->mysqlDatabase->getDumpCommandLine($outputPath)
-                    )
-                );
-                break;
-            case 'postgresql':
-                $this->shellProcessor->process(
-                    Process::fromShellCommandline(
-                        $this->postgresqlDatabase->getDumpCommandLine($outputPath)
-                    )
-                );
-                break;
-            default:
-                throw new \Exception("Database type {$databaseServer->database_type} not supported");
-        }
-    }
+        $command = match ($databaseServer->database_type) {
+            'mysql', 'mariadb' => $this->mysqlDatabase->getDumpCommandLine($outputPath),
+            'postgresql' => $this->postgresqlDatabase->getDumpCommandLine($outputPath),
+            default => throw new \Exception("Database type {$databaseServer->database_type} not supported"),
+        };
 
-    private function compress(string $path): string
-    {
-        $this->shellProcessor->process(
-            Process::fromShellCommandline(
-                $this->compressor->getCompressCommandLine($path)
-            )
-        );
-
-        return $this->compressor->getCompressedPath($path);
+        $this->shellProcessor->process($command);
     }
 
     private function generateBackupFilename(DatabaseServer $databaseServer): string
