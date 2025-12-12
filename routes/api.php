@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\SnapshotController;
 use App\Http\Controllers\Api\VolumeController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum'])->name('api.')->group(function () {
     Route::apiResource('database-servers', DatabaseServerController::class)
         ->only(['index', 'show']);
     Route::post('database-servers/{database_server}/backup', [DatabaseServerController::class, 'backup'])

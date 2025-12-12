@@ -11,7 +11,7 @@ use App\Services\Backup\BackupTask;
 use App\Services\Backup\RestoreTask;
 use Illuminate\Console\Command;
 
-class BackupTest extends Command
+class TestBackup extends Command
 {
     protected $signature = 'backup:test {--type=* : Database type(s) to test (mysql, postgres). Defaults to both}';
 

@@ -19,6 +19,9 @@ test('authenticated users can access api docs', function () {
 test('authenticated users can access openapi spec', function () {
     $user = User::factory()->create();
 
+    // run the command to generate the docs
+    $this->artisan('scribe:generate');
+
     $response = $this->actingAs($user)->get('/docs.openapi');
 
     $response->assertSuccessful();
