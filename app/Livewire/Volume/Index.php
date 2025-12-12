@@ -3,6 +3,7 @@
 namespace App\Livewire\Volume;
 
 use App\Models\Volume;
+use App\Queries\VolumeQuery;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -82,15 +83,11 @@ class Index extends Component
 
     public function render()
     {
-        $volumes = Volume::query()
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('name', 'like', '%'.$this->search.'%')
-                        ->orWhere('type', 'like', '%'.$this->search.'%');
-                });
-            })
-            ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
-            ->paginate(10);
+        $volumes = VolumeQuery::buildFromParams(
+            search: $this->search,
+            sortColumn: $this->sortBy['column'],
+            sortDirection: $this->sortBy['direction']
+        )->paginate(10);
 
         return view('livewire.volume.index', [
             'volumes' => $volumes,

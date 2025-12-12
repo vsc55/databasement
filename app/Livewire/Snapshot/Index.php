@@ -3,6 +3,7 @@
 namespace App\Livewire\Snapshot;
 
 use App\Models\Snapshot;
+use App\Queries\SnapshotQuery;
 use App\Services\Backup\Filesystems\FilesystemProvider;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Locked;
@@ -138,23 +139,12 @@ class Index extends Component
 
     public function render()
     {
-        $snapshots = Snapshot::query()
-            ->with(['databaseServer', 'backup', 'volume', 'triggeredBy', 'job'])
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->whereHas('databaseServer', function ($sq) {
-                        $sq->where('name', 'like', '%'.$this->search.'%');
-                    })
-                        ->orWhere('database_name', 'like', '%'.$this->search.'%')
-                        ->orWhere('database_host', 'like', '%'.$this->search.'%')
-                        ->orWhere('path', 'like', '%'.$this->search.'%');
-                });
-            })
-            ->when($this->statusFilter !== 'all', function ($query) {
-                $query->whereHas('job', fn ($q) => $q->where('status', $this->statusFilter));
-            })
-            ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
-            ->paginate(15);
+        $snapshots = SnapshotQuery::buildFromParams(
+            search: $this->search,
+            statusFilter: $this->statusFilter,
+            sortColumn: $this->sortBy['column'],
+            sortDirection: $this->sortBy['direction']
+        )->paginate(15);
 
         return view('livewire.snapshot.index', [
             'snapshots' => $snapshots,

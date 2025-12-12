@@ -3,6 +3,7 @@
 namespace App\Livewire\BackupJob;
 
 use App\Models\BackupJob;
+use App\Queries\BackupJobQuery;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Mary\Traits\Toast;
@@ -105,45 +106,13 @@ class Index extends Component
 
     public function render()
     {
-        $jobs = BackupJob::query()
-            ->with([
-                'snapshot.databaseServer',
-                'snapshot.triggeredBy',
-                'restore.snapshot.databaseServer',
-                'restore.targetServer',
-                'restore.triggeredBy',
-            ])
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    // Search in snapshot-related data
-                    $q->whereHas('snapshot.databaseServer', function ($sq) {
-                        $sq->where('name', 'like', '%'.$this->search.'%');
-                    })
-                        ->orWhereHas('snapshot', function ($sq) {
-                            $sq->where('database_name', 'like', '%'.$this->search.'%')
-                                ->orWhere('database_host', 'like', '%'.$this->search.'%');
-                        })
-                        // Search in restore-related data
-                        ->orWhereHas('restore.targetServer', function ($sq) {
-                            $sq->where('name', 'like', '%'.$this->search.'%');
-                        })
-                        ->orWhereHas('restore', function ($sq) {
-                            $sq->where('schema_name', 'like', '%'.$this->search.'%');
-                        });
-                });
-            })
-            ->when($this->statusFilter !== 'all', function ($query) {
-                $query->where('status', $this->statusFilter);
-            })
-            ->when($this->typeFilter !== 'all', function ($query) {
-                if ($this->typeFilter === 'backup') {
-                    $query->whereHas('snapshot');
-                } else {
-                    $query->whereHas('restore');
-                }
-            })
-            ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
-            ->paginate(15);
+        $jobs = BackupJobQuery::buildFromParams(
+            search: $this->search,
+            statusFilter: $this->statusFilter,
+            typeFilter: $this->typeFilter,
+            sortColumn: $this->sortBy['column'],
+            sortDirection: $this->sortBy['direction']
+        )->paginate(15);
 
         return view('livewire.backup-job.index', [
             'jobs' => $jobs,

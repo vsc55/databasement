@@ -2,9 +2,9 @@
 
 namespace App\Livewire\DatabaseServer;
 
-use App\Jobs\ProcessBackupJob;
 use App\Models\DatabaseServer;
-use App\Services\Backup\BackupJobFactory;
+use App\Queries\DatabaseServerQuery;
+use App\Services\Backup\TriggerBackupAction;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -97,55 +97,27 @@ class Index extends Component
         $this->dispatch('open-restore-modal', targetServerId: $id);
     }
 
-    public function runBackup(string $id, BackupJobFactory $backupJobFactory)
+    public function runBackup(string $id, TriggerBackupAction $action)
     {
         $server = DatabaseServer::with(['backup.volume'])->findOrFail($id);
 
         $this->authorize('backup', $server);
 
-        if (! $server->backup) {
-            $this->error('No backup configuration found for this database server.', position: 'toast-bottom');
-
-            return;
-        }
-
         try {
-            $snapshots = $backupJobFactory->createSnapshots(
-                server: $server,
-                method: 'manual',
-                triggeredByUserId: auth()->id()
-            );
-
-            // Dispatch a job for each snapshot (parallel execution)
-            foreach ($snapshots as $snapshot) {
-                ProcessBackupJob::dispatch($snapshot->id);
-            }
-
-            $count = count($snapshots);
-            $message = $count === 1
-                ? 'Backup queued successfully!'
-                : "{$count} database backups queued successfully!";
-
-            $this->success($message, position: 'toast-bottom');
+            $result = $action->execute($server, auth()->id());
+            $this->success($result['message'], position: 'toast-bottom');
         } catch (\Throwable $e) {
-            $this->error('Failed to queue backup: '.$e->getMessage(), position: 'toast-bottom');
+            $this->error($e->getMessage(), position: 'toast-bottom');
         }
     }
 
     public function render()
     {
-        $servers = DatabaseServer::query()
-            ->with(['backup.volume'])
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('name', 'like', '%'.$this->search.'%')
-                        ->orWhere('host', 'like', '%'.$this->search.'%')
-                        ->orWhere('database_type', 'like', '%'.$this->search.'%')
-                        ->orWhere('description', 'like', '%'.$this->search.'%');
-                });
-            })
-            ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
-            ->paginate(10);
+        $servers = DatabaseServerQuery::buildFromParams(
+            search: $this->search,
+            sortColumn: $this->sortBy['column'],
+            sortDirection: $this->sortBy['direction']
+        )->paginate(10);
 
         return view('livewire.database-server.index', [
             'servers' => $servers,
