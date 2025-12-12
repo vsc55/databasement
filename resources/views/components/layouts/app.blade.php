@@ -53,6 +53,8 @@
                 <x-menu-item title="{{ __('Snapshots') }}" icon="o-camera" link="{{ route('snapshots.index') }}" wire:navigate />
                 <x-menu-item title="{{ __('Volumes') }}" icon="o-circle-stack" link="{{ route('volumes.index') }}" wire:navigate />
                 <x-menu-item title="{{ __('Users') }}" icon="o-users" link="{{ route('users.index') }}" wire:navigate />
+                <x-menu-separator />
+                <x-menu-item title="{{ __('API Docs') }}" icon="o-document-text" link="{{ route('scribe') }}" />
             </x-menu>
 
             {{-- USER SECTION AT BOTTOM --}}

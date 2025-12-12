@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/**
+ * @mixin \App\Models\Volume
+ */
+class VolumeResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'type' => $this->type,
+            'config' => $this->getPublicConfig(),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
+    }
+
+    /**
+     * Get config without sensitive data.
+     *
+     * @return array<string, mixed>
+     */
+    private function getPublicConfig(): array
+    {
+        $config = $this->config ?? [];
+
+        // Remove sensitive fields
+        unset($config['secret']);
+        unset($config['key']);
+
+        return $config;
+    }
+}
