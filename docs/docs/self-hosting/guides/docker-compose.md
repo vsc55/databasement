@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Docker Compose
 
-This guide will help you deploy DBBackup using Docker Compose. This method is ideal when you want to run DBBackup alongside its own dedicated database container.
+This guide will help you deploy Databasement using Docker Compose. This method is ideal when you want to run Databasement alongside its own dedicated database container.
 
 ## Prerequisites
 
@@ -15,13 +15,13 @@ This guide will help you deploy DBBackup using Docker Compose. This method is id
 ### 1. Create Project Directory
 
 ```bash
-mkdir dbbackup && cd dbbackup
+mkdir databasement && cd databasement
 ```
 
 ### 2. Generate Application Key
 
 ```bash
-docker run --rm davidcrty/backup-manager:latest php artisan key:generate --show
+docker run --rm david-crty/databasement:latest php artisan key:generate --show
 ```
 
 Save this key for the next step.
@@ -31,13 +31,13 @@ Save this key for the next step.
 ```yaml title="docker-compose.yml"
 services:
   app:
-    image: davidcrty/backup-manager:latest
-    container_name: dbbackup
+    image: david-crty/databasement:latest
+    container_name: databasement
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      APP_NAME: DBBackup
+      APP_NAME: Databasement
       APP_ENV: production
       APP_DEBUG: "false"
       APP_URL: http://localhost:8000
@@ -45,8 +45,8 @@ services:
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
-      DB_DATABASE: dbbackup
-      DB_USERNAME: dbbackup
+      DB_DATABASE: databasement
+      DB_USERNAME: databasement
       DB_PASSWORD: secure-password-change-me
       LOG_CHANNEL: stderr
       MYSQL_CLI_TYPE: mariadb
@@ -58,12 +58,12 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: dbbackup-db
+    container_name: databasement-db
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root-password-change-me
-      MYSQL_DATABASE: dbbackup
-      MYSQL_USER: dbbackup
+      MYSQL_DATABASE: databasement
+      MYSQL_USER: databasement
       MYSQL_PASSWORD: secure-password-change-me
     volumes:
       - mysql-data:/var/lib/mysql
@@ -95,13 +95,13 @@ If you prefer PostgreSQL:
 ```yaml title="docker-compose.yml"
 services:
   app:
-    image: davidcrty/backup-manager:latest
-    container_name: dbbackup
+    image: david-crty/databasement:latest
+    container_name: databasement
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      APP_NAME: DBBackup
+      APP_NAME: Databasement
       APP_ENV: production
       APP_DEBUG: "false"
       APP_URL: http://localhost:8000
@@ -109,8 +109,8 @@ services:
       DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: 5432
-      DB_DATABASE: dbbackup
-      DB_USERNAME: dbbackup
+      DB_DATABASE: databasement
+      DB_USERNAME: databasement
       DB_PASSWORD: secure-password-change-me
       LOG_CHANNEL: stderr
     volumes:
@@ -121,16 +121,16 @@ services:
 
   db:
     image: postgres:16
-    container_name: dbbackup-db
+    container_name: databasement-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: dbbackup
-      POSTGRES_USER: dbbackup
+      POSTGRES_DB: databasement
+      POSTGRES_USER: databasement
       POSTGRES_PASSWORD: secure-password-change-me
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dbbackup -d dbbackup"]
+      test: ["CMD-SHELL", "pg_isready -U databasement -d databasement"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -168,11 +168,11 @@ services:
       - letsencrypt:/letsencrypt
 
   app:
-    image: davidcrty/backup-manager:latest
-    container_name: dbbackup
+    image: david-crty/databasement:latest
+    container_name: databasement
     restart: unless-stopped
     environment:
-      APP_NAME: DBBackup
+      APP_NAME: Databasement
       APP_ENV: production
       APP_DEBUG: "false"
       APP_URL: https://backup.yourdomain.com
@@ -180,8 +180,8 @@ services:
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
-      DB_DATABASE: dbbackup
-      DB_USERNAME: dbbackup
+      DB_DATABASE: databasement
+      DB_USERNAME: databasement
       DB_PASSWORD: secure-password-change-me
       LOG_CHANNEL: stderr
       MYSQL_CLI_TYPE: mariadb
@@ -192,19 +192,19 @@ services:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dbbackup.rule=Host(`backup.yourdomain.com`)"
-      - "traefik.http.routers.dbbackup.entrypoints=websecure"
-      - "traefik.http.routers.dbbackup.tls.certresolver=letsencrypt"
-      - "traefik.http.services.dbbackup.loadbalancer.server.port=8000"
+      - "traefik.http.routers.databasement.rule=Host(`backup.yourdomain.com`)"
+      - "traefik.http.routers.databasement.entrypoints=websecure"
+      - "traefik.http.routers.databasement.tls.certresolver=letsencrypt"
+      - "traefik.http.services.databasement.loadbalancer.server.port=8000"
 
   db:
     image: mysql:8.0
-    container_name: dbbackup-db
+    container_name: databasement-db
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root-password-change-me
-      MYSQL_DATABASE: dbbackup
-      MYSQL_USER: dbbackup
+      MYSQL_DATABASE: databasement
+      MYSQL_USER: databasement
       MYSQL_PASSWORD: secure-password-change-me
     volumes:
       - mysql-data:/var/lib/mysql
@@ -226,7 +226,7 @@ For better security, use a separate `.env` file:
 
 ```bash title=".env"
 # Application
-APP_NAME=DBBackup
+APP_NAME=Databasement
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://backup.yourdomain.com
@@ -236,8 +236,8 @@ APP_KEY=base64:your-generated-key-here
 DB_CONNECTION=mysql
 DB_HOST=db
 DB_PORT=3306
-DB_DATABASE=dbbackup
-DB_USERNAME=dbbackup
+DB_DATABASE=databasement
+DB_USERNAME=databasement
 DB_PASSWORD=secure-password-change-me
 
 # MySQL Root (for db container)
@@ -253,7 +253,7 @@ Then reference it in your compose file:
 ```yaml title="docker-compose.yml"
 services:
   app:
-    image: davidcrty/backup-manager:latest
+    image: david-crty/databasement:latest
     env_file: .env
     # ... rest of config
 ```
@@ -293,10 +293,10 @@ docker compose up -d
 
 ```bash
 # MySQL
-docker compose exec db mysqldump -u dbbackup -p dbbackup > backup.sql
+docker compose exec db mysqldump -u databasement -p databasement > backup.sql
 
 # PostgreSQL
-docker compose exec db pg_dump -U dbbackup dbbackup > backup.sql
+docker compose exec db pg_dump -U databasement databasement > backup.sql
 ```
 
 ### Run Artisan Commands

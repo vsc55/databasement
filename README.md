@@ -1,4 +1,4 @@
-# Backup Manager
+# Databasement
 
 A Laravel application for managing database server backups and restores. Supports MySQL, PostgreSQL, and MariaDB with automated backup scheduling and cross-server restoration capabilities.
 
@@ -24,7 +24,7 @@ A Laravel application for managing database server backups and restores. Support
 
 ```bash
 git clone <repository-url>
-cd backup-manager
+cd databasement
 make setup
 ```
 

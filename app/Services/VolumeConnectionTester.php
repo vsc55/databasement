@@ -67,7 +67,7 @@ readonly class VolumeConnectionTester
         }
 
         // Try to create and delete a test file
-        $testFile = $path.'/.backup-manager-test-'.uniqid();
+        $testFile = $path.'/.databasement-test-'.uniqid();
 
         try {
             // Create test file
@@ -155,7 +155,7 @@ readonly class VolumeConnectionTester
             ];
 
             // Create a temporary Volume-like object to test
-            $testFilename = '.backup-manager-test-'.uniqid();
+            $testFilename = '.databasement-test-'.uniqid();
             $testContent = 'test-'.uniqid();
 
             // Use AWS SDK directly for testing

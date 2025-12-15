@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Docker
 
-This guide will help you deploy DBBackup using Docker. This is the simplest deployment method, using a single container that includes everything you need.
+This guide will help you deploy Databasement using Docker. This is the simplest deployment method, using a single container that includes everything you need.
 
 ## Prerequisites
 
@@ -12,22 +12,22 @@ This guide will help you deploy DBBackup using Docker. This is the simplest depl
 
 ## Quick Start (SQLite)
 
-The simplest way to run DBBackup with SQLite as the database:
+The simplest way to run Databasement with SQLite as the database:
 
 ```bash
 # Generate an application key
-APP_KEY=$(docker run --rm davidcrty/backup-manager:latest php artisan key:generate --show)
+APP_KEY=$(docker run --rm david-crty/databasement:latest php artisan key:generate --show)
 
 # Run the container
 docker run -d \
-  --name dbbackup \
+  --name databasement \
   -p 8000:8000 \
   -e APP_KEY=$APP_KEY \
   -e DB_CONNECTION=sqlite \
   -e DB_DATABASE=/app/database/database.sqlite \
-  -v dbbackup-storage:/app/storage \
-  -v dbbackup-database:/app/database \
-  davidcrty/backup-manager:latest
+  -v databasement-storage:/app/storage \
+  -v databasement-database:/app/database \
+  david-crty/databasement:latest
 ```
 
 Access the application at http://localhost:8000
@@ -39,37 +39,37 @@ For production, we recommend using MySQL or PostgreSQL instead of SQLite.
 ### 1. Generate the Application Key
 
 ```bash
-docker run --rm davidcrty/backup-manager:latest php artisan key:generate --show
+docker run --rm david-crty/databasement:latest php artisan key:generate --show
 ```
 
 Save this key - you'll need it for the `APP_KEY` environment variable.
 
 ### 2. Prepare Your Database
 
-Create a database and user for DBBackup on your MySQL/PostgreSQL server:
+Create a database and user for Databasement on your MySQL/PostgreSQL server:
 
 **MySQL:**
 ```sql
-CREATE DATABASE dbbackup CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'dbbackup'@'%' IDENTIFIED BY 'your-secure-password';
-GRANT ALL PRIVILEGES ON dbbackup.* TO 'dbbackup'@'%';
+CREATE DATABASE databasement CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'databasement'@'%' IDENTIFIED BY 'your-secure-password';
+GRANT ALL PRIVILEGES ON databasement.* TO 'databasement'@'%';
 FLUSH PRIVILEGES;
 ```
 
 **PostgreSQL:**
 ```sql
-CREATE DATABASE dbbackup;
-CREATE USER dbbackup WITH ENCRYPTED PASSWORD 'your-secure-password';
-GRANT ALL PRIVILEGES ON DATABASE dbbackup TO dbbackup;
+CREATE DATABASE databasement;
+CREATE USER databasement WITH ENCRYPTED PASSWORD 'your-secure-password';
+GRANT ALL PRIVILEGES ON DATABASE databasement TO databasement;
 ```
 
 ### 3. Run the Container
 
 ```bash
 docker run -d \
-  --name dbbackup \
+  --name databasement \
   -p 8000:8000 \
-  -e APP_NAME=DBBackup \
+  -e APP_NAME=Databasement \
   -e APP_ENV=production \
   -e APP_DEBUG=false \
   -e APP_URL=https://backup.yourdomain.com \
@@ -77,12 +77,12 @@ docker run -d \
   -e DB_CONNECTION=mysql \
   -e DB_HOST=your-mysql-host \
   -e DB_PORT=3306 \
-  -e DB_DATABASE=dbbackup \
-  -e DB_USERNAME=dbbackup \
+  -e DB_DATABASE=databasement \
+  -e DB_USERNAME=databasement \
   -e DB_PASSWORD=your-secure-password \
   -e LOG_CHANNEL=stderr \
-  -v dbbackup-storage:/app/storage \
-  davidcrty/backup-manager:latest
+  -v databasement-storage:/app/storage \
+  david-crty/databasement:latest
 ```
 
 ### 4. Access the Application
@@ -94,7 +94,7 @@ Open your browser and navigate to your configured URL (or http://localhost:8000 
 For easier management, create an `.env` file:
 
 ```bash title=".env"
-APP_NAME=DBBackup
+APP_NAME=Databasement
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://backup.yourdomain.com
@@ -103,8 +103,8 @@ APP_KEY=base64:your-generated-key
 DB_CONNECTION=mysql
 DB_HOST=your-mysql-host
 DB_PORT=3306
-DB_DATABASE=dbbackup
-DB_USERNAME=dbbackup
+DB_DATABASE=databasement
+DB_USERNAME=databasement
 DB_PASSWORD=your-secure-password
 
 LOG_CHANNEL=stderr
@@ -115,11 +115,11 @@ Then run with:
 
 ```bash
 docker run -d \
-  --name dbbackup \
+  --name databasement \
   -p 8000:8000 \
   --env-file .env \
-  -v dbbackup-storage:/app/storage \
-  davidcrty/backup-manager:latest
+  -v databasement-storage:/app/storage \
+  david-crty/databasement:latest
 ```
 
 ## Behind a Reverse Proxy
@@ -155,19 +155,19 @@ To update to the latest version:
 
 ```bash
 # Pull the latest image
-docker pull davidcrty/backup-manager:latest
+docker pull david-crty/databasement:latest
 
 # Stop and remove the old container
-docker stop dbbackup
-docker rm dbbackup
+docker stop databasement
+docker rm databasement
 
 # Start a new container with the same configuration
 docker run -d \
-  --name dbbackup \
+  --name databasement \
   -p 8000:8000 \
   --env-file .env \
-  -v dbbackup-storage:/app/storage \
-  davidcrty/backup-manager:latest
+  -v databasement-storage:/app/storage \
+  david-crty/databasement:latest
 ```
 
 The container automatically runs database migrations on startup, so your data will be migrated to the new schema.
@@ -177,25 +177,25 @@ The container automatically runs database migrations on startup, so your data wi
 ### View Logs
 
 ```bash
-docker logs dbbackup
-docker logs -f dbbackup  # Follow logs
+docker logs databasement
+docker logs -f databasement  # Follow logs
 ```
 
 ### Access the Container Shell
 
 ```bash
-docker exec -it dbbackup sh
+docker exec -it databasement sh
 ```
 
 ### Run Artisan Commands
 
 ```bash
-docker exec dbbackup php artisan migrate:status
-docker exec dbbackup php artisan queue:work --once
+docker exec databasement php artisan migrate:status
+docker exec databasement php artisan queue:work --once
 ```
 
 ### Check Database Connection
 
 ```bash
-docker exec dbbackup php artisan db:show
+docker exec databasement php artisan db:show
 ```

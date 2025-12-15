@@ -10,7 +10,7 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: backup-manager-mysql
+    container_name: databasement-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: testdb
@@ -27,7 +27,7 @@ services:
 
   postgres:
     image: postgres:16
-    container_name: backup-manager-postgres
+    container_name: databasement-postgres
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root

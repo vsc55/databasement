@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Backups
 
-DBBackup allows you to create on-demand backups of your databases. Backups are processed asynchronously, so you can continue using the application while they run.
+Databasement allows you to create on-demand backups of your databases. Backups are processed asynchronously, so you can continue using the application while they run.
 
 ## Creating a Backup
 
@@ -21,7 +21,7 @@ The backup will be queued and processed in the background. You can monitor progr
 
 ## How Backups Work
 
-When you create a backup, DBBackup:
+When you create a backup, Databasement:
 
 1. Connects to the database server
 2. Runs the appropriate dump command (`mysqldump` or `pg_dump`)
@@ -31,7 +31,7 @@ When you create a backup, DBBackup:
 
 ### Backup Commands
 
-DBBackup uses native database tools for reliable backups:
+Databasement uses native database tools for reliable backups:
 
 **MySQL / MariaDB:**
 ```bash
@@ -68,7 +68,7 @@ View all backup jobs on the **Snapshots** page. You can see:
 
 If a backup fails, check:
 
-1. **Database connectivity**: Can DBBackup still connect to the server?
+1. **Database connectivity**: Can Databasement still connect to the server?
 2. **Disk space**: Is there enough space on the storage volume?
 3. **Permissions**: Does the database user have backup privileges?
 4. **Timeout**: Large databases may need more time

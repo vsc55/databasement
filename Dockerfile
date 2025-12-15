@@ -1,4 +1,4 @@
-FROM davidcrty/backup-manager-php:latest AS backend-build
+FROM david-crty/databasement-php:latest AS backend-build
 
 COPY --chown=1000:1000 . /app
 
@@ -16,7 +16,7 @@ COPY --from=backend-build /app /app
 RUN npm run build
 
 
-FROM davidcrty/backup-manager-php:latest
+FROM david-crty/databasement-php:latest
 
 USER root
 RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini

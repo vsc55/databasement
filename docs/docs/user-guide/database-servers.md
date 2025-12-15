@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Database Servers
 
-Database servers are the source of your backups. DBBackup can connect to and backup MySQL, PostgreSQL, and MariaDB servers.
+Database servers are the source of your backups. Databasement can connect to and backup MySQL, PostgreSQL, and MariaDB servers.
 
 ## Adding a Server
 

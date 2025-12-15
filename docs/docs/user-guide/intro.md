@@ -4,9 +4,9 @@ sidebar_position: 1
 
 # Introduction
 
-Welcome to the **User Guide** for **DBBackup**!
+Welcome to the **User Guide** for **Databasement**!
 
-DBBackup is a web-based tool for managing database backups. This guide covers how to use the application to:
+Databasement is a web-based tool for managing database backups. This guide covers how to use the application to:
 
 - Register and manage database servers
 - Configure backup schedules
@@ -15,11 +15,11 @@ DBBackup is a web-based tool for managing database backups. This guide covers ho
 
 ## Getting Started
 
-After installing DBBackup, access the web interface and create your first account.
+After installing Databasement, access the web interface and create your first account.
 
 ### 1. Create Your Account
 
-When you first access DBBackup, you'll be prompted to register. Create an account with:
+When you first access Databasement, you'll be prompted to register. Create an account with:
 - Your name
 - Email address
 - Password
@@ -43,7 +43,7 @@ Click **Test Connection** to verify the connection before saving.
 
 Before creating backups, you need a storage volume. Navigate to **Volumes** and click **Add Volume**.
 
-DBBackup supports:
+Databasement supports:
 - **Local storage**: Store backups on the server's filesystem
 - **S3-compatible storage**: Amazon S3, MinIO, DigitalOcean Spaces, etc.
 

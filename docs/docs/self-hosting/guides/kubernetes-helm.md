@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Kubernetes + Helm
 
-This guide will help you deploy DBBackup on Kubernetes using Helm.
+This guide will help you deploy Databasement on Kubernetes using Helm.
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ This guide will help you deploy DBBackup on Kubernetes using Helm.
 ### 1. Add the Helm Repository
 
 ```bash
-helm repo add dbbackup https://davidcrty.github.io/dbbackup/charts
+helm repo add databasement https://david-crty.github.io/databasement/charts
 helm repo update
 ```
 
@@ -26,7 +26,7 @@ helm repo update
 ```yaml title="values.yaml"
 # Application configuration
 app:
-  name: DBBackup
+  name: Databasement
   env: production
   debug: false
   url: https://backup.yourdomain.com
@@ -39,8 +39,8 @@ database:
   connection: mysql
   host: your-mysql-host.example.com
   port: 3306
-  name: dbbackup
-  username: dbbackup
+  name: databasement
+  username: databasement
   password: your-secure-password
 
   # Or deploy a MySQL container (not recommended for production)
@@ -48,7 +48,7 @@ database:
   # mysql:
   #   enabled: true
   #   rootPassword: root-password
-  #   password: dbbackup-password
+  #   password: databasement-password
 
 # Ingress configuration
 ingress:
@@ -62,7 +62,7 @@ ingress:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: dbbackup-tls
+    - secretName: databasement-tls
       hosts:
         - backup.yourdomain.com
 
@@ -88,15 +88,15 @@ replicaCount: 1
 ### 3. Install the Chart
 
 ```bash
-helm install dbbackup dbbackup/dbbackup -f values.yaml -n dbbackup --create-namespace
+helm install databasement databasement/databasement -f values.yaml -n databasement --create-namespace
 ```
 
 ### 4. Verify the Deployment
 
 ```bash
-kubectl get pods -n dbbackup
-kubectl get svc -n dbbackup
-kubectl get ingress -n dbbackup
+kubectl get pods -n databasement
+kubectl get svc -n databasement
+kubectl get ingress -n databasement
 ```
 
 ## Generating the Application Key
@@ -104,7 +104,7 @@ kubectl get ingress -n dbbackup
 Before deploying, generate an application key:
 
 ```bash
-kubectl run --rm -it keygen --image=davidcrty/backup-manager:latest --restart=Never -- php artisan key:generate --show
+kubectl run --rm -it keygen --image=david-crty/databasement:latest --restart=Never -- php artisan key:generate --show
 ```
 
 Copy the output and use it as `app.key` in your values file.
@@ -115,7 +115,7 @@ Copy the output and use it as `app.key` in your values file.
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `app.name` | Application name | `DBBackup` |
+| `app.name` | Application name | `Databasement` |
 | `app.env` | Environment (`production`, `local`) | `production` |
 | `app.debug` | Enable debug mode | `false` |
 | `app.url` | Public URL | `http://localhost:8000` |
@@ -124,8 +124,8 @@ Copy the output and use it as `app.key` in your values file.
 | `database.connection` | Database type (`mysql`, `pgsql`, `sqlite`) | `mysql` |
 | `database.host` | Database host | `""` |
 | `database.port` | Database port | `3306` |
-| `database.name` | Database name | `dbbackup` |
-| `database.username` | Database username | `dbbackup` |
+| `database.name` | Database name | `databasement` |
+| `database.username` | Database username | `databasement` |
 | `database.password` | Database password | `""` |
 | `ingress.enabled` | Enable ingress | `false` |
 | `ingress.className` | Ingress class | `""` |
@@ -141,12 +141,12 @@ For production, use Kubernetes secrets instead of plain values:
 
 ```yaml title="values.yaml"
 app:
-  existingSecret: dbbackup-secrets
+  existingSecret: databasement-secrets
   secretKeys:
     appKey: APP_KEY
 
 database:
-  existingSecret: dbbackup-db-secrets
+  existingSecret: databasement-db-secrets
   secretKeys:
     password: DB_PASSWORD
 ```
@@ -154,13 +154,13 @@ database:
 Create the secrets:
 
 ```bash
-kubectl create secret generic dbbackup-secrets \
+kubectl create secret generic databasement-secrets \
   --from-literal=APP_KEY='base64:your-key-here' \
-  -n dbbackup
+  -n databasement
 
-kubectl create secret generic dbbackup-db-secrets \
+kubectl create secret generic databasement-db-secrets \
   --from-literal=DB_PASSWORD='your-db-password' \
-  -n dbbackup
+  -n databasement
 ```
 
 ## High Availability
@@ -187,7 +187,7 @@ affinity:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                  - dbbackup
+                  - databasement
           topologyKey: kubernetes.io/hostname
 ```
 
@@ -199,19 +199,19 @@ When running multiple replicas, ensure your database can handle concurrent conne
 
 ```bash
 helm repo update
-helm upgrade dbbackup dbbackup/dbbackup -f values.yaml -n dbbackup
+helm upgrade databasement databasement/databasement -f values.yaml -n databasement
 ```
 
 ## Uninstalling
 
 ```bash
-helm uninstall dbbackup -n dbbackup
+helm uninstall databasement -n databasement
 ```
 
 :::caution
 This will not delete the PersistentVolumeClaim by default. To delete all data:
 ```bash
-kubectl delete pvc -l app.kubernetes.io/name=dbbackup -n dbbackup
+kubectl delete pvc -l app.kubernetes.io/name=databasement -n databasement
 ```
 :::
 
@@ -220,24 +220,24 @@ kubectl delete pvc -l app.kubernetes.io/name=dbbackup -n dbbackup
 ### Check Pod Logs
 
 ```bash
-kubectl logs -f deployment/dbbackup -n dbbackup
+kubectl logs -f deployment/databasement -n databasement
 ```
 
 ### Check Pod Status
 
 ```bash
-kubectl describe pod -l app.kubernetes.io/name=dbbackup -n dbbackup
+kubectl describe pod -l app.kubernetes.io/name=databasement -n databasement
 ```
 
 ### Access Pod Shell
 
 ```bash
-kubectl exec -it deployment/dbbackup -n dbbackup -- sh
+kubectl exec -it deployment/databasement -n databasement -- sh
 ```
 
 ### Run Artisan Commands
 
 ```bash
-kubectl exec deployment/dbbackup -n dbbackup -- php artisan migrate:status
-kubectl exec deployment/dbbackup -n dbbackup -- php artisan queue:work --once
+kubectl exec deployment/databasement -n databasement -- php artisan migrate:status
+kubectl exec deployment/databasement -n databasement -- php artisan queue:work --once
 ```

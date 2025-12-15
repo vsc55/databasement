@@ -4,13 +4,13 @@ sidebar_position: 5
 
 # Storage Volumes
 
-Storage volumes are the destinations where your backup files are stored. DBBackup supports local filesystem storage and S3-compatible object storage.
+Storage volumes are the destinations where your backup files are stored. Databasement supports local filesystem storage and S3-compatible object storage.
 
 ## Volume Types
 
 ### Local Storage
 
-Store backups directly on the DBBackup server's filesystem. This is the simplest option but requires adequate disk space.
+Store backups directly on the Databasement server's filesystem. This is the simplest option but requires adequate disk space.
 
 **Best for:**
 - Small deployments
@@ -56,7 +56,7 @@ Store backups in Amazon S3 or any S3-compatible service:
 5. Click **Save**
 
 :::warning
-Ensure the DBBackup container has write access to the specified path. You may need to mount a volume when running Docker.
+Ensure the Databasement container has write access to the specified path. You may need to mount a volume when running Docker.
 :::
 
 ### S3 Volume
@@ -150,7 +150,7 @@ Secret Key: your-b2-application-key
 4. Confirm the deletion
 
 :::warning
-Deleting a volume does not delete the backup files stored in it. Files remain in the storage location but become inaccessible through DBBackup.
+Deleting a volume does not delete the backup files stored in it. Files remain in the storage location but become inaccessible through Databasement.
 :::
 
 ## Volume Management Tips

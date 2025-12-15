@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Configuration
 
-This page contains all the environment variables you can use to configure DBBackup.
+This page contains all the environment variables you can use to configure Databasement.
 
 ## Application Settings
 
@@ -21,14 +21,14 @@ This page contains all the environment variables you can use to configure DBBack
 The `APP_KEY` is required for encryption. Generate one with:
 
 ```bash
-docker run --rm davidcrty/backup-manager:latest php artisan key:generate --show
+docker run --rm david-crty/databasement:latest php artisan key:generate --show
 ```
 
 Copy the output (e.g., `base64:xxxx...`) and set it as `APP_KEY`.
 
 ## Database Configuration
 
-DBBackup needs a database to store its own data (users, servers, backup configurations).
+Databasement needs a database to store its own data (users, servers, backup configurations).
 
 ### SQLite (Simplest)
 
@@ -47,8 +47,8 @@ When using SQLite, make sure to mount a volume for `/app/database` to persist da
 DB_CONNECTION=mysql
 DB_HOST=your-mysql-host
 DB_PORT=3306
-DB_DATABASE=dbbackup
-DB_USERNAME=dbbackup
+DB_DATABASE=databasement
+DB_USERNAME=databasement
 DB_PASSWORD=your-secure-password
 ```
 
@@ -58,8 +58,8 @@ DB_PASSWORD=your-secure-password
 DB_CONNECTION=pgsql
 DB_HOST=your-postgres-host
 DB_PORT=5432
-DB_DATABASE=dbbackup
-DB_USERNAME=dbbackup
+DB_DATABASE=databasement
+DB_USERNAME=databasement
 DB_PASSWORD=your-secure-password
 ```
 
@@ -84,7 +84,7 @@ AWS_BUCKET=your-bucket-name
 
 ## CLI Tools Configuration
 
-DBBackup uses command-line tools to perform database dumps and restores.
+Databasement uses command-line tools to perform database dumps and restores.
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -122,18 +122,18 @@ Here's a complete `.env` file for a production deployment with MySQL:
 
 ```bash
 # Application
-APP_NAME=DBBackup
+APP_NAME=Databasement
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://backup.yourdomain.com
 APP_KEY=base64:your-generated-key-here
 
-# Database (for DBBackup itself)
+# Database (for Databasement itself)
 DB_CONNECTION=mysql
 DB_HOST=mysql.yourdomain.com
 DB_PORT=3306
-DB_DATABASE=dbbackup
-DB_USERNAME=dbbackup
+DB_DATABASE=databasement
+DB_USERNAME=databasement
 DB_PASSWORD=secure-password-here
 
 # Storage & Queue

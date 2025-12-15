@@ -3,7 +3,7 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-    title: 'DBBackup',
+    title: 'Databasement',
     tagline: 'Simple and powerful database backup management',
     favicon: 'img/favicon.ico',
 
@@ -11,11 +11,11 @@ const config: Config = {
         require.resolve('docusaurus-lunr-search'),
     ],
 
-    url: 'https://davidcrty.github.io',
-    baseUrl: '/dbbackup/',
+    url: 'https://david-crty.github.io',
+    baseUrl: '/databasement/',
 
-    organizationName: 'davidcrty',
-    projectName: 'dbbackup',
+    organizationName: 'David-Crty',
+    projectName: 'databasement',
 
     onBrokenLinks: 'throw',
     onBrokenMarkdownLinks: 'warn',
@@ -32,7 +32,7 @@ const config: Config = {
                 docs: {
                     sidebarPath: './sidebars.ts',
                     routeBasePath: '/',
-                    editUrl: 'https://github.com/davidcrty/dbbackup/tree/main/docs/',
+                    editUrl: 'https://github.com/David-Crty/databasement/tree/main/docs/',
                 },
                 blog: false,
                 theme: {
@@ -44,7 +44,7 @@ const config: Config = {
 
     themeConfig: {
         navbar: {
-            title: 'DBBackup',
+            title: 'Databasement',
             items: [
                 {
                     type: 'doc',
@@ -59,7 +59,7 @@ const config: Config = {
                     label: 'User Guide',
                 },
                 {
-                    href: 'https://github.com/davidcrty/dbbackup',
+                    href: 'https://github.com/David-Crty/databasement',
                     label: 'GitHub',
                     position: 'right',
                 },
@@ -86,12 +86,12 @@ const config: Config = {
                     items: [
                         {
                             label: 'GitHub',
-                            href: 'https://github.com/davidcrty/dbbackup',
+                            href: 'https://github.com/David-Crty/databasement',
                         },
                     ],
                 },
             ],
-            copyright: `Copyright © ${new Date().getFullYear()} DBBackup. Built with Docusaurus.`,
+            copyright: `Copyright © ${new Date().getFullYear()} Databasement. Built with Docusaurus.`,
         },
         prism: {
             theme: prismThemes.github,

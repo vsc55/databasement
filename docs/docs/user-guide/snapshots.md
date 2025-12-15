@@ -28,7 +28,7 @@ Click on a snapshot to see detailed information:
 
 ## Restoring a Snapshot
 
-DBBackup supports flexible restore options:
+Databasement supports flexible restore options:
 
 ### 1. Same Server Restore (Rollback)
 
@@ -68,7 +68,7 @@ Cross-server restores require matching database types. You cannot restore a MySQ
 
 ## Restore Process
 
-When you restore a snapshot, DBBackup:
+When you restore a snapshot, Databasement:
 
 1. Downloads the snapshot from storage
 2. Decompresses the backup file

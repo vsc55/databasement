@@ -4,9 +4,9 @@ sidebar_position: 1
 
 # Introduction
 
-Welcome to the **Self-Hosting** section of the **DBBackup documentation**!
+Welcome to the **Self-Hosting** section of the **Databasement documentation**!
 
-DBBackup is a web application for managing database server backups. It allows you to register database servers (MySQL, PostgreSQL, MariaDB), test connections, schedule automated backups, and restore snapshots to any registered server.
+Databasement is a web application for managing database server backups. It allows you to register database servers (MySQL, PostgreSQL, MariaDB), test connections, schedule automated backups, and restore snapshots to any registered server.
 
 ## Features
 
@@ -19,7 +19,7 @@ DBBackup is a web application for managing database server backups. It allows yo
 
 ## Getting Started
 
-We provide guides to deploy DBBackup using:
+We provide guides to deploy Databasement using:
 
 - [**Docker**](/self-hosting/guides/docker) - Single container deployment (recommended for most users)
 - [**Docker Compose**](/self-hosting/guides/docker-compose) - Multi-container setup with external database
@@ -27,7 +27,7 @@ We provide guides to deploy DBBackup using:
 
 ## Requirements
 
-DBBackup runs in a single container that includes:
+Databasement runs in a single container that includes:
 - FrankenPHP web server
 - Queue worker for async backup/restore jobs
 - Scheduler for automated backups
@@ -38,14 +38,14 @@ The only external requirement is a database for the application itself:
 
 ## Quick Start
 
-The fastest way to try DBBackup:
+The fastest way to try Databasement:
 
 ```bash
 docker run -d \
-  --name dbbackup \
+  --name databasement \
   -p 8000:8000 \
-  -v dbbackup-data:/app/storage \
-  davidcrty/backup-manager:latest
+  -v databasement-data:/app/storage \
+  david-crty/databasement:latest
 ```
 
 Then open http://localhost:8000 in your browser.
@@ -56,4 +56,4 @@ This quick start uses SQLite for the application database. For production deploy
 
 ## Support
 
-If you encounter issues with self-hosting, please open an issue on [GitHub](https://github.com/davidcrty/dbbackup/issues).
+If you encounter issues with self-hosting, please open an issue on [GitHub](https://github.com/David-Crty/databasement/issues).

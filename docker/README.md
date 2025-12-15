@@ -57,7 +57,7 @@ Both databases contain identical test data:
 ### MySQL
 ```bash
 # Using docker exec
-docker exec -it backup-manager-mysql mysql -u admin -padmin testdb
+docker exec -it databasement-mysql mysql -u admin -padmin testdb
 
 # Using local mysql client
 mysql -h 127.0.0.1 -P 3306 -u admin -padmin testdb
@@ -66,7 +66,7 @@ mysql -h 127.0.0.1 -P 3306 -u admin -padmin testdb
 ### PostgreSQL
 ```bash
 # Using docker exec
-docker exec -it backup-manager-postgres psql -U admin -d testdb
+docker exec -it databasement-postgres psql -U admin -d testdb
 
 # Using local psql client
 psql -h 127.0.0.1 -p 5432 -U admin -d testdb
@@ -118,19 +118,19 @@ docker-compose logs -f postgres
 ### MySQL Backup Example
 ```bash
 # Backup
-docker exec backup-manager-mysql mysqldump -u admin -padmin testdb > backup-mysql.sql
+docker exec databasement-mysql mysqldump -u admin -padmin testdb > backup-mysql.sql
 
 # Restore
-docker exec -i backup-manager-mysql mysql -u admin -padmin testdb < backup-mysql.sql
+docker exec -i databasement-mysql mysql -u admin -padmin testdb < backup-mysql.sql
 ```
 
 ### PostgreSQL Backup Example
 ```bash
 # Backup
-docker exec backup-manager-postgres pg_dump -U admin testdb > backup-postgres.sql
+docker exec databasement-postgres pg_dump -U admin testdb > backup-postgres.sql
 
 # Restore
-docker exec -i backup-manager-postgres psql -U admin testdb < backup-postgres.sql
+docker exec -i databasement-postgres psql -U admin testdb < backup-postgres.sql
 ```
 
 ## Troubleshooting

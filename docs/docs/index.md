@@ -3,17 +3,17 @@ sidebar_position: 0
 slug: /
 ---
 
-# DBBackup Documentation
+# Databasement Documentation
 
-Welcome to the **DBBackup** documentation!
+Welcome to the **Databasement** documentation!
 
-DBBackup is a web application for managing database server backups. It allows you to register database servers (MySQL, PostgreSQL, MariaDB), test connections, schedule automated backups, and restore snapshots to any registered server.
+Databasement is a web application for managing database server backups. It allows you to register database servers (MySQL, PostgreSQL, MariaDB), test connections, schedule automated backups, and restore snapshots to any registered server.
 
 ## Documentation Sections
 
 ### Self-Hosting
 
-Learn how to deploy DBBackup on your own infrastructure:
+Learn how to deploy Databasement on your own infrastructure:
 
 - [Introduction](/self-hosting/intro) - Overview and requirements
 - [Configuration](/self-hosting/configuration) - Environment variables reference
@@ -23,7 +23,7 @@ Learn how to deploy DBBackup on your own infrastructure:
 
 ### User Guide
 
-Learn how to use DBBackup:
+Learn how to use Databasement:
 
 - [Getting Started](/user-guide/intro) - First steps after installation
 - [Database Servers](/user-guide/database-servers) - Managing database connections
@@ -33,5 +33,5 @@ Learn how to use DBBackup:
 
 ## Quick Links
 
-- [GitHub Repository](https://github.com/davidcrty/dbbackup)
-- [Report an Issue](https://github.com/davidcrty/dbbackup/issues)
+- [GitHub Repository](https://github.com/David-Crty/databasement)
+- [Report an Issue](https://github.com/David-Crty/databasement/issues)
