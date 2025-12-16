@@ -79,7 +79,7 @@ class HealthCheckController extends Controller
 
         return match ($driver) {
             'pgsql' => DB::select('show timezone;')[0]->TimeZone,
-            'mysql' => DB::select("select @@session.time_zone as timezone")[0]->timezone,
+            'mysql' => DB::select('select @@session.time_zone as timezone')[0]->timezone,
             default => config('app.timezone', 'UTC'),
         };
     }
