@@ -55,7 +55,7 @@
                 <x-menu-item title="{{ __('Volumes') }}" icon="o-circle-stack" link="{{ route('volumes.index') }}" wire:navigate />
                 <x-menu-item title="{{ __('Users') }}" icon="o-users" link="{{ route('users.index') }}" wire:navigate />
                 <x-menu-separator />
-                <x-menu-item title="{{ __('API Docs') }}" icon="o-document-text" link="{{ route('scribe') }}" />
+                <x-menu-item title="{{ __('API Docs') }}" icon="o-document-text" link="{{ route('scramble.docs.ui') }}" />
             </x-menu>
 
             {{-- USER SECTION AT BOTTOM --}}

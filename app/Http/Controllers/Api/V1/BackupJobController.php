@@ -9,21 +9,13 @@ use App\Queries\BackupJobQuery;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
+/**
+ * @tags Jobs
+ */
 class BackupJobController extends Controller
 {
     /**
-     * @group Jobs
-     *
-     * Get all Jobs.
-     *
-     * Retrieves a paginated list of backup and restore jobs with optional filtering and sorting.
-     *
-     * @queryParam filter[status] string Filter by status (pending, queued, running, completed, failed). Example: completed
-     * @queryParam filter[type] string Filter by job type (backup, restore). Example: backup
-     * @queryParam filter[search] string Search by server name, database name, or host. Example: production
-     * @queryParam sort string Sort by field. Prefix with `-` for descending. Allowed: created_at, started_at, completed_at, status. Example: -created_at
-     * @queryParam page int Page number for pagination. Example: 1
-     * @queryParam per_page int Number of items per page (max 100). Example: 15
+     * List all jobs.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -35,13 +27,7 @@ class BackupJobController extends Controller
     }
 
     /**
-     * @group Jobs
-     *
-     * Get a specific Job.
-     *
-     * Retrieves detailed information about a specific backup or restore job by ID.
-     *
-     * @urlParam id string required The ID of the job. Example: 01HQ3XYZABC123DEF456GHI789
+     * Get a job.
      */
     public function show(BackupJob $backupJob): BackupJobResource
     {
