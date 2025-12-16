@@ -4,7 +4,7 @@ use App\Models\DatabaseServer;
 use App\Models\User;
 
 test('unauthenticated users cannot access database servers api', function () {
-    $response = $this->getJson('/api/database-servers');
+    $response = $this->getJson('/api/v1/database-servers');
 
     $response->assertUnauthorized();
 });
@@ -14,7 +14,7 @@ test('authenticated users can list database servers via api', function () {
     DatabaseServer::factory()->count(3)->create();
 
     $response = $this->actingAs($user, 'sanctum')
-        ->getJson('/api/database-servers');
+        ->getJson('/api/v1/database-servers');
 
     $response->assertOk()
         ->assertJsonStructure([
@@ -43,7 +43,7 @@ test('authenticated users can filter database servers by name', function () {
     DatabaseServer::factory()->create(['name' => 'Staging PostgreSQL']);
 
     $response = $this->actingAs($user, 'sanctum')
-        ->getJson('/api/database-servers?filter[name]=Production');
+        ->getJson('/api/v1/database-servers?filter[name]=Production');
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
@@ -56,7 +56,7 @@ test('authenticated users can filter database servers by database type', functio
     DatabaseServer::factory()->create(['database_type' => 'postgresql']);
 
     $response = $this->actingAs($user, 'sanctum')
-        ->getJson('/api/database-servers?filter[database_type]=mysql');
+        ->getJson('/api/v1/database-servers?filter[database_type]=mysql');
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
@@ -69,7 +69,7 @@ test('authenticated users can filter database servers by host', function () {
     DatabaseServer::factory()->create(['host' => 'db.example.com']);
 
     $response = $this->actingAs($user, 'sanctum')
-        ->getJson('/api/database-servers?filter[host]=localhost');
+        ->getJson('/api/v1/database-servers?filter[host]=localhost');
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
@@ -82,7 +82,7 @@ test('authenticated users can sort database servers', function () {
     DatabaseServer::factory()->create(['name' => 'Beta Server']);
 
     $response = $this->actingAs($user, 'sanctum')
-        ->getJson('/api/database-servers?sort=name');
+        ->getJson('/api/v1/database-servers?sort=name');
 
     $response->assertOk()
         ->assertJsonPath('data.0.name', 'Alpha Server')
@@ -94,7 +94,7 @@ test('authenticated users can get a specific database server', function () {
     $server = DatabaseServer::factory()->create(['name' => 'Test Server']);
 
     $response = $this->actingAs($user, 'sanctum')
-        ->getJson("/api/database-servers/{$server->id}");
+        ->getJson("/api/v1/database-servers/{$server->id}");
 
     $response->assertOk()
         ->assertJsonPath('data.id', $server->id)
@@ -106,7 +106,7 @@ test('password is not exposed in database server api response', function () {
     $server = DatabaseServer::factory()->create(['password' => 'secret-password']);
 
     $response = $this->actingAs($user, 'sanctum')
-        ->getJson("/api/database-servers/{$server->id}");
+        ->getJson("/api/v1/database-servers/{$server->id}");
 
     $response->assertOk()
         ->assertJsonMissing(['password' => 'secret-password']);
