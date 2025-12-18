@@ -26,3 +26,26 @@ test('humanDuration formats minutes and seconds', function () {
         ->and(Formatters::humanDuration(125000))->toBe('2m 5s')
         ->and(Formatters::humanDuration(3661000))->toBe('61m 1s');
 });
+
+test('humanFileSize returns 0 B for null or zero input', function () {
+    expect(Formatters::humanFileSize(null))->toBe('0 B')
+        ->and(Formatters::humanFileSize(0))->toBe('0 B');
+});
+
+test('humanFileSize formats bytes', function () {
+    expect(Formatters::humanFileSize(1))->toBe('1 B')
+        ->and(Formatters::humanFileSize(512))->toBe('512 B')
+        ->and(Formatters::humanFileSize(1024))->toBe('1024 B')
+        ->and(Formatters::humanFileSize(1025))->toBe('1 KB');
+});
+
+test('humanFileSize formats kilobytes', function () {
+    expect(Formatters::humanFileSize(1536))->toBe('1.5 KB')
+        ->and(Formatters::humanFileSize(1048577))->toBe('1 MB');
+});
+
+test('humanFileSize formats megabytes and above', function () {
+    expect(Formatters::humanFileSize(1572864))->toBe('1.5 MB')
+        ->and(Formatters::humanFileSize(1073741825))->toBe('1 GB')
+        ->and(Formatters::humanFileSize(1099511627777))->toBe('1 TB');
+});

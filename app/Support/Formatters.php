@@ -28,4 +28,22 @@ class Formatters
 
         return "{$minutes}m {$remainingSeconds}s";
     }
+
+    /**
+     * Format bytes into human-readable file size
+     */
+    public static function humanFileSize(?int $bytes): string
+    {
+        if ($bytes === null || $bytes === 0) {
+            return '0 B';
+        }
+
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
+        }
+
+        return round($bytes, 2).' '.$units[$i];
+    }
 }

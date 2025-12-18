@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Formatters;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -139,14 +140,7 @@ class Snapshot extends Model
      */
     public function getHumanFileSize(): string
     {
-        $bytes = $this->file_size;
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-
-        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
-            $bytes /= 1024;
-        }
-
-        return round($bytes, 2).' '.$units[$i];
+        return Formatters::humanFileSize($this->file_size);
     }
 
     /**
