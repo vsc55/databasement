@@ -60,8 +60,9 @@ class BackupTask
 
             $this->dumpDatabase($databaseServer, $databaseName, $workingFile);
             $archive = $this->compressor->compress($workingFile);
-            $fileSize = Formatters::humanFileSize(filesize($archive));
-            $job->log("Transferring backup ({$fileSize}) to volume: {$snapshot->volume->name}", 'info', [
+            $fileSize = filesize($archive);
+            $humanFileSize = Formatters::humanFileSize($fileSize);
+            $job->log("Transferring backup ({$humanFileSize}) to volume: {$snapshot->volume->name}", 'info', [
                 'volume_type' => $snapshot->volume->type,
             ]);
             $destinationPath = $this->generateBackupFilename($databaseServer, $databaseName);
@@ -80,7 +81,7 @@ class BackupTask
             $checksum = hash_file('sha256', $archive);
 
             $job->log('Backup completed successfully', 'success', [
-                'file_size' => $fileSize,
+                'file_size' => $humanFileSize,
                 'checksum' => substr($checksum, 0, 16).'...',
                 'destination' => $destinationPath,
             ]);
