@@ -77,7 +77,7 @@
                                     <div class="flex-1">
                                         <div class="font-semibold">{{ $snapshot->database_name }}</div>
                                         <div class="text-sm opacity-70">
-                                            {{ __('Created:') }} {{ $snapshot->created_at->format('Y-m-d H:i:s') }} ({{ $snapshot->created_at->diffForHumans() }})
+                                            {{ __('Created:') }} {{ \App\Support\Formatters::humanDate($snapshot->created_at) }} ({{ $snapshot->created_at->diffForHumans() }})
                                         </div>
                                         <div class="text-sm opacity-50 mt-1">
                                             {{ __('Size:') }} {{ $snapshot->getHumanFileSize() }}
@@ -127,7 +127,7 @@
                         <div class="text-sm font-semibold mb-2">{{ __('Restore Summary') }}</div>
                         <div class="text-sm opacity-70 space-y-1">
                             <div><strong>{{ __('Source:') }}</strong> {{ $this->selectedSourceServer?->name }} &bull; {{ $this->selectedSnapshot->database_name }}</div>
-                            <div><strong>{{ __('Snapshot:') }}</strong> {{ $this->selectedSnapshot->created_at->format('Y-m-d H:i:s') }}</div>
+                            <div><strong>{{ __('Snapshot:') }}</strong> {{ \App\Support\Formatters::humanDate($this->selectedSnapshot->created_at) }}</div>
                             <div><strong>{{ __('Target:') }}</strong> {{ $targetServer?->name }} &bull; {{ $schemaName ?: __('(enter name)') }}</div>
                             <div><strong>{{ __('Size:') }}</strong> {{ $this->selectedSnapshot->getHumanFileSize() }}</div>
                         </div>

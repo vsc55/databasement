@@ -50,7 +50,7 @@
                     <div class="flex items-center gap-2">
                         @if($form->user->isActive())
                             <x-badge value="{{ __('Active') }}" class="badge-success" />
-                            <span class="text-sm text-base-content/70">{{ __('Joined :date', ['date' => $form->user->invitation_accepted_at->diffForHumans()]) }}</span>
+                            <span class="text-sm text-base-content/70">{{ __('Joined :date', ['date' => \App\Support\Formatters::humanDate($form->user->invitation_accepted_at)]) }}</span>
                         @else
                             <x-badge value="{{ __('Pending') }}" class="badge-warning" />
                             <span class="text-sm text-base-content/70">{{ __('Invitation sent, awaiting registration') }}</span>

@@ -61,7 +61,8 @@
             @endscope
 
             @scope('cell_created_at', $server)
-                {{ $server->created_at->diffForHumans() }}
+                <div class="table-cell-primary">{{ \App\Support\Formatters::humanDate($server->created_at) }}</div>
+                <div class="text-sm text-base-content/70">{{ $server->created_at->diffForHumans() }}</div>
             @endscope
 
             @scope('actions', $server)

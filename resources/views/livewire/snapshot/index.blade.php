@@ -23,7 +23,7 @@
             </x-slot:empty>
 
             @scope('cell_started_at', $snapshot)
-                <div class="table-cell-primary">{{ $snapshot->started_at->format('M d, Y H:i') }}</div>
+                <div class="table-cell-primary">{{ \App\Support\Formatters::humanDate($snapshot->started_at) }}</div>
                 <div class="text-sm text-base-content/70">{{ $snapshot->started_at->diffForHumans() }}</div>
             @endscope
 

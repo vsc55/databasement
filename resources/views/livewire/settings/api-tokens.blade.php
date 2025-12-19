@@ -18,9 +18,9 @@
                             <div>
                                 <div class="font-medium">{{ $token->name }}</div>
                                 <div class="text-sm text-base-content/70">
-                                    {{ __('Created') }} {{ $token->created_at->diffForHumans() }}
+                                    {{ __('Created') }} {{ \App\Support\Formatters::humanDate($token->created_at) }}
                                     @if($token->last_used_at)
-                                        &mdash; {{ __('Last used') }} {{ $token->last_used_at->diffForHumans() }}
+                                        &mdash; {{ __('Last used') }} {{ \App\Support\Formatters::humanDate($token->last_used_at) }}
                                     @else
                                         &mdash; {{ __('Never used') }}
                                     @endif

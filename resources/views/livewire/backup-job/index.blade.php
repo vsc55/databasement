@@ -33,7 +33,7 @@
             @endscope
 
             @scope('cell_created_at', $job)
-                <div class="table-cell-primary">{{ $job->created_at->format('M d, Y H:i') }}</div>
+                <div class="table-cell-primary">{{ \App\Support\Formatters::humanDate($job->created_at) }}</div>
                 <div class="text-sm text-base-content/70">{{ $job->created_at->diffForHumans() }}</div>
             @endscope
 

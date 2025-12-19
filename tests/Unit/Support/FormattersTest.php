@@ -49,3 +49,27 @@ test('humanFileSize formats megabytes and above', function () {
         ->and(Formatters::humanFileSize(1073741825))->toBe('1 GB')
         ->and(Formatters::humanFileSize(1099511627777))->toBe('1 TB');
 });
+
+test('humanDate returns null for null input', function () {
+    expect(Formatters::humanDate(null))->toBeNull();
+});
+
+test('humanDate formats Carbon instances', function () {
+    $date = \Carbon\Carbon::create(2025, 12, 19, 16, 44, 0);
+    expect(Formatters::humanDate($date))->toBe('Dec 19, 2025, 16:44');
+});
+
+test('humanDate formats DateTime instances', function () {
+    $date = new \DateTime('2025-12-19 16:44:00');
+    expect(Formatters::humanDate($date))->toBe('Dec 19, 2025, 16:44');
+});
+
+test('humanDate formats string dates', function () {
+    expect(Formatters::humanDate('2025-12-19 16:44:00'))->toBe('Dec 19, 2025, 16:44')
+        ->and(Formatters::humanDate('2025-01-05 09:05:00'))->toBe('Jan 5, 2025, 09:05');
+});
+
+test('humanDate handles single digit days correctly', function () {
+    $date = \Carbon\Carbon::create(2025, 1, 5, 9, 5, 0);
+    expect(Formatters::humanDate($date))->toBe('Jan 5, 2025, 09:05');
+});

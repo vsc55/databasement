@@ -31,9 +31,9 @@
                 </div>
                 @if($this->selectedJob->started_at)
                     <div class="text-sm text-base-content/70">
-                        Started: {{ $this->selectedJob->started_at->format('Y-m-d H:i:s') }}
+                        Started: {{ \App\Support\Formatters::humanDate($this->selectedJob->started_at) }}
                         @if($this->selectedJob->completed_at)
-                            | Completed: {{ $this->selectedJob->completed_at->format('Y-m-d H:i:s') }}
+                            | Completed: {{ \App\Support\Formatters::humanDate($this->selectedJob->completed_at) }}
                             | Duration: {{ $this->selectedJob->getHumanDuration() }}
                         @endif
                     </div>
