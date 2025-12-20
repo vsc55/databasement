@@ -10,8 +10,6 @@ This page contains all the environment variables you can use to configure Databa
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `APP_NAME` | Application name displayed in the UI | `Laravel` |
-| `APP_ENV` | Environment mode (`local`, `production`) | `production` |
 | `APP_DEBUG` | Enable debug mode (set to `false` in production) | `false` |
 | `APP_URL` | Full URL where the app is accessible | `http://localhost:8000` |
 | `APP_KEY` | Application encryption key (required) | - |
@@ -34,14 +32,24 @@ Databasement needs a database to store its own data (users, servers, backup conf
 
 ```bash
 DB_CONNECTION=sqlite
-DB_DATABASE=/app/database/database.sqlite
+DB_DATABASE=/data/database.sqlite
 ```
 
 :::note
-When using SQLite, make sure to mount a volume for `/app/database` to persist data.
+When using SQLite, make sure to mount a volume for `/data` to persist data.
 :::
 
 ### MySQL / MariaDB
+
+Create a database and user for Databasement on your MySQL server:
+
+**MySQL:**
+```sql
+CREATE DATABASE databasement CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'databasement'@'%' IDENTIFIED BY 'your-secure-password';
+GRANT ALL PRIVILEGES ON databasement.* TO 'databasement'@'%';
+FLUSH PRIVILEGES;
+```
 
 ```bash
 DB_CONNECTION=mysql
@@ -53,6 +61,15 @@ DB_PASSWORD=your-secure-password
 ```
 
 ### PostgreSQL
+
+Create a database and user for Databasement on your PostgreSQL server:
+
+**PostgreSQL:**
+```sql
+CREATE DATABASE databasement;
+CREATE USER databasement WITH ENCRYPTED PASSWORD 'your-secure-password';
+GRANT ALL PRIVILEGES ON DATABASE databasement TO databasement;
+```
 
 ```bash
 DB_CONNECTION=pgsql
@@ -122,7 +139,6 @@ Here's a complete `.env` file for a production deployment with MySQL:
 
 ```bash
 # Application
-APP_NAME=Databasement
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://backup.yourdomain.com
@@ -147,4 +163,20 @@ LOG_LEVEL=warning
 
 # CLI Tools
 MYSQL_CLI_TYPE=mariadb
+```
+
+## Troubleshooting
+
+### Enable Debug Mode
+- Enable debug mode with `APP_DEBUG=true` in your values file.
+    - Go to `https://dabasement.yourdomain.com/health/debug` to view the debug page.
+
+- Check the logs
+- Report any issues on [GitHub](https://github.com/david-crty/databasement/issues)
+
+### Run Artisan Commands
+
+```bash
+php artisan migrate:status # Check database migrations
+php artisan config:show database # View database configuration
 ```

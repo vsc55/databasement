@@ -51,7 +51,7 @@ ingress:
 
 #### Production Configuration (External Database)
 
-For production with an external MySQL/PostgreSQL database:
+For production, we recommend using MySQL or PostgreSQL instead of SQLite:
 
 ```yaml title="values.yaml"
 app:
@@ -106,18 +106,3 @@ This will not delete the PersistentVolumeClaim by default. To delete all data:
 kubectl delete pvc -l app.kubernetes.io/name=databasement -n databasement
 ```
 :::
-
-## Troubleshooting
-
-### Enable Debug Mode
-- Enable debug mode with `app.debug: true` in your values file.
-  - Go to `https://dabasement.yourdomain.com/health/debug` to view the debug page.
-
-- Check the logs with `kubectl logs deployment/databasement -n databasement`.
-
-### Run Artisan Commands
-
-```bash
-kubectl exec deployment/databasement -n databasement -- php artisan migrate:status
-kubectl exec deployment/databasement -n databasement -- php artisan config:show database
-```
