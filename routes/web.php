@@ -37,8 +37,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('database-servers.index');
     Route::get('volumes', \App\Livewire\Volume\Index::class)
         ->name('volumes.index');
-    Route::get('snapshots', \App\Livewire\Snapshot\Index::class)
-        ->name('snapshots.index');
     Route::get('jobs', \App\Livewire\BackupJob\Index::class)
         ->name('jobs.index');
 
