@@ -17,14 +17,14 @@ This is a Laravel application for managing database server backups. It uses Live
 
 ## Development Commands
 
-**IMPORTANT**: All PHP commands MUST be run through Docker. Never run `php`, `composer`, or `vendor/bin/*` commands directly on the host. Use the Makefile targets or `docker compose exec php <command>` instead.
+**IMPORTANT**: All PHP commands MUST be run through Docker. Never run `php`, `composer`, or `vendor/bin/*` commands directly on the host. Use the Makefile targets or `docker compose exec app <command>` instead.
 
 ### Setup and Installation
 ```bash
 make setup              # Full project setup: install deps, env setup, generate key, migrate, build assets
 make install            # Install composer and npm dependencies only
-docker compose exec php composer require <package>  # Install a composer package
-docker compose exec php composer remove <package>   # Remove a composer package
+docker compose exec app composer require <package>  # Install a composer package
+docker compose exec app composer remove <package>   # Remove a composer package
 ```
 
 ### Running the Application

@@ -1,4 +1,4 @@
-.PHONY: help install start test test-filter test-coverage backup-test lint-check lint-fix lint migrate migrate-fresh db-seed setup clean
+.PHONY: help install start test test-filter test-coverage backup-test lint-check lint-fix lint migrate migrate-fresh db-seed setup clean import-db
 
 # Colors for output
 GREEN  := \033[0;32m
@@ -72,6 +72,23 @@ build: ## Build production assets
 
 dev-assets: ## Start Vite dev server only
 	$(NPM_EXEC) run dev
+
+##@ Database
+
+import-db: ## Import a gzipped SQL dump into local MySQL (usage: make import-db FILE=/path/to/dump.sql.gz)
+	@if [ -z "$(FILE)" ]; then \
+		echo "$(YELLOW)Usage: make import-db FILE=/path/to/dump.sql.gz$(NC)"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(FILE)" ]; then \
+		echo "$(YELLOW)Error: File '$(FILE)' not found$(NC)"; \
+		exit 1; \
+	fi
+	@echo "$(GREEN)Dropping and recreating 'databasement' database...$(NC)"
+	$(DOCKER_COMPOSE) exec -T mysql mysql -uroot -proot -e "DROP DATABASE IF EXISTS databasement; CREATE DATABASE databasement;"
+	@echo "$(GREEN)Importing $(FILE)...$(NC)"
+	gunzip -c "$(FILE)" | $(DOCKER_COMPOSE) exec -T mysql mysql -uroot -proot databasement
+	@echo "$(GREEN)Import complete!$(NC)"
 
 ##@ Maintenance
 
