@@ -58,6 +58,9 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static Builder<static>|User whereTwoFactorSecret($value)
  * @method static Builder<static>|User whereUpdatedAt($value)
  *
+ * @property-read Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
+ * @property-read int|null $tokens_count
+ *
  * @mixin \Eloquent
  */
 class User extends Authenticatable

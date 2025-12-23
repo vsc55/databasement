@@ -59,6 +59,9 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|Snapshot whereUpdatedAt($value)
  * @method static Builder<static>|Snapshot whereVolumeId($value)
  *
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Restore> $restores
+ * @property-read int|null $restores_count
+ *
  * @mixin \Eloquent
  */
 class Snapshot extends Model

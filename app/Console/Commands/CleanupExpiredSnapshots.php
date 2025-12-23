@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Backup;
 use App\Models\Snapshot;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Builder;
 
 class CleanupExpiredSnapshots extends Command
 {
@@ -39,7 +40,7 @@ class CleanupExpiredSnapshots extends Command
 
             // Find completed snapshots older than retention period
             $expiredSnapshots = Snapshot::where('backup_id', $backup->id)
-                ->whereHas('job', fn ($q) => $q->where('status', 'completed'))
+                ->whereHas('job', fn (Builder $q): Builder => $q->whereRaw('status = ?', ['completed']))
                 ->where('created_at', '<', $cutoffDate)
                 ->get();
 

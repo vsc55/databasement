@@ -44,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|DatabaseServer wherePort($value)
  * @method static Builder<static>|DatabaseServer whereUpdatedAt($value)
  * @method static Builder<static>|DatabaseServer whereUsername($value)
+ * @method static Builder<static>|DatabaseServer whereBackupAllDatabases($value)
  *
  * @mixin \Eloquent
  */
