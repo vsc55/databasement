@@ -103,7 +103,10 @@ afterEach(function () {
     Mockery::close();
 });
 
-test('run executes mysql backup workflow successfully', function () {
+test('run executes mysql backup workflow successfully', function (string $cliType, string $expectedBinary, string $extraFlags) {
+    // Set config - MysqlDatabase reads it lazily
+    config(['backup.mysql_cli_type' => $cliType]);
+
     // Arrange
     $databaseServer = createDatabaseServer([
         'name' => 'Production MySQL',
@@ -123,12 +126,15 @@ test('run executes mysql backup workflow successfully', function () {
     $sqlFile = $this->tempDir.'/'.$snapshot->id.'.sql';
 
     $expectedCommands = [
-        "mariadb-dump --routines --skip_ssl --host='localhost' --port='3306' --user='root' --password='secret' 'myapp' > '$sqlFile'",
+        "{$expectedBinary} --routines{$extraFlags} --host='localhost' --port='3306' --user='root' --password='secret' 'myapp' > '$sqlFile'",
         "gzip '$sqlFile'",
     ];
     $commands = $this->shellProcessor->getCommands();
     expect($commands)->toEqual($expectedCommands);
-});
+})->with([
+    'mariadb cli' => ['mariadb', 'mariadb-dump', ' --skip_ssl'],
+    'mysql cli' => ['mysql', 'mysqldump', ' '],
+]);
 
 test('run executes postgresql backup workflow successfully', function () {
     // Arrange

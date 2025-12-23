@@ -19,11 +19,9 @@ class MysqlDatabase implements DatabaseInterface
         ],
     ];
 
-    private string $mysqlCliUsed;
-
-    public function __construct()
+    private function getMysqlCliType(): string
     {
-        $this->mysqlCliUsed = config('backup.mysql_cli_type', 'mariadb');
+        return config('backup.mysql_cli_type', 'mariadb');
     }
 
     public function handles(mixed $type): bool
@@ -50,7 +48,7 @@ class MysqlDatabase implements DatabaseInterface
         }
         if (array_key_exists('ssl', $this->config) && $this->config['ssl'] === true) {
             $extras[] = '--ssl';
-        } elseif ($this->mysqlCliUsed === 'mariadb') {
+        } elseif ($this->getMysqlCliType() === 'mariadb') {
             $extras[] = '--skip_ssl';
         }
         if (array_key_exists('extraParams', $this->config) && $this->config['extraParams']) {
@@ -66,7 +64,7 @@ class MysqlDatabase implements DatabaseInterface
             }
         }
 
-        $command = $this->mysqlCli[$this->mysqlCliUsed]['dump'].' --routines '.implode(' ', $extras).'%s %s > %s';
+        $command = $this->mysqlCli[$this->getMysqlCliType()]['dump'].' --routines '.implode(' ', $extras).'%s %s > %s';
 
         return sprintf(
             $command,
@@ -81,7 +79,7 @@ class MysqlDatabase implements DatabaseInterface
         $extras = [];
         if (array_key_exists('ssl', $this->config) && $this->config['ssl'] === true) {
             $extras[] = '--ssl';
-        } elseif ($this->mysqlCliUsed === 'mariadb') {
+        } elseif ($this->getMysqlCliType() === 'mariadb') {
             $extras[] = '--skip_ssl';
         }
 
@@ -96,7 +94,7 @@ class MysqlDatabase implements DatabaseInterface
 
         return sprintf(
             '%s%s '.implode(' ', $extras).' %s -e "source %s"',
-            $this->mysqlCli[$this->mysqlCliUsed]['restore'],
+            $this->mysqlCli[$this->getMysqlCliType()]['restore'],
             $params,
             escapeshellarg($this->config['database']),
             $inputPath

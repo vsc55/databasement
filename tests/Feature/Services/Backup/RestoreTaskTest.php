@@ -108,7 +108,10 @@ afterEach(function () {
     Mockery::close();
 });
 
-test('run executes mysql restore workflow successfully', function () {
+test('run executes mysql restore workflow successfully', function (string $cliType, string $expectedCommand) {
+    // Set config - MysqlDatabase now reads it lazily
+    config(['backup.mysql_cli_type' => $cliType]);
+
     // Arrange
     $sourceServer = createRestoreDatabaseServer([
         'name' => 'Source MySQL',
@@ -151,12 +154,21 @@ test('run executes mysql restore workflow successfully', function () {
     // Expected commands
     $expectedCommands = [
         "gzip -d '$compressedFile'",
-        "mariadb --host='target.localhost' --port='3306' --user='root' --password='secret' --skip_ssl 'restored_db' -e \"source $decompressedFile\"",
+        "{$expectedCommand} 'restored_db' -e \"source $decompressedFile\"",
     ];
 
     $commands = $this->shellProcessor->getCommands();
     expect($commands)->toEqual($expectedCommands);
-});
+})->with([
+    'mariadb' => [
+        'mariadb',
+        "mariadb --host='target.localhost' --port='3306' --user='root' --password='secret' --skip_ssl",
+    ],
+    'mysql' => [
+        'mysql',
+        "mysql --host='target.localhost' --port='3306' --user='root' --password='secret' ",
+    ],
+]);
 
 test('run executes postgresql restore workflow successfully', function () {
     // Arrange
