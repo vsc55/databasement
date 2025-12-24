@@ -103,7 +103,7 @@ afterEach(function () {
     Mockery::close();
 });
 
-test('run executes mysql backup workflow successfully', function (string $cliType, string $expectedBinary, string $extraFlags) {
+test('run executes mysql and mariadb backup workflow successfully', function (string $cliType, string $expectedBinary, string $extraFlags) {
     // Set config - MysqlDatabase reads it lazily
     config(['backup.mysql_cli_type' => $cliType]);
 
@@ -157,33 +157,6 @@ test('run executes postgresql backup workflow successfully', function () {
 
     $expectedCommands = [
         "PGPASSWORD='pg_secret' pg_dump --clean --host='db.example.com' --port='5432' --username='postgres' 'staging_db' -f '$sqlFile'",
-        "gzip '$sqlFile'",
-    ];
-    $commands = $this->shellProcessor->getCommands();
-    expect($commands)->toEqual($expectedCommands);
-});
-
-test('run executes mariadb backup workflow successfully', function () {
-    // Arrange - MariaDB uses MySQL interface
-    $databaseServer = createDatabaseServer([
-        'name' => 'MariaDB Server',
-        'host' => 'mariadb.local',
-        'port' => 3306,
-        'database_type' => 'mariadb',
-        'username' => 'admin',
-        'password' => 'admin123',
-        'database_name' => 'app_data',
-    ]);
-
-    $snapshots = $this->backupJobFactory->createSnapshots($databaseServer, 'manual');
-    $snapshot = $snapshots[0];
-
-    setupCommonExpectations($snapshot);
-    $this->backupTask->run($snapshot);
-    $sqlFile = $this->tempDir.'/'.$snapshot->id.'.sql';
-
-    $expectedCommands = [
-        "mariadb-dump --routines --skip_ssl --host='mariadb.local' --port='3306' --user='admin' --password='admin123' 'app_data' > '$sqlFile'",
         "gzip '$sqlFile'",
     ];
     $commands = $this->shellProcessor->getCommands();
