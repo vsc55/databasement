@@ -3,10 +3,14 @@
 
 echo "🎨 Running code formatter..."
 make lint-fix
-
 echo ""
+
+echo "🔍 Running static analysis..."
+make phpstan
+echo ""
+
 echo "🧪 Running tests..."
 make test
-
 echo ""
+
 echo "✅ Pre-commit checks passed!"
