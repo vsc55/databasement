@@ -36,7 +36,7 @@ class VolumeFactory extends Factory
                 'prefix' => fake()->optional()->slug(),
             ],
             'local' => [
-                'path' => '/var/backups/'.fake()->slug(),
+                'path' => $this->createTempDirectory(),
             ],
             default => throw new \InvalidArgumentException("Invalid volume type: {$type}"),
         };
@@ -50,9 +50,23 @@ class VolumeFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'type' => 'local',
             'config' => [
-                'path' => '/var/backups/'.fake()->slug(),
+                'path' => $this->createTempDirectory(),
             ],
         ]);
+    }
+
+    /**
+     * Create a temporary directory that actually exists on the filesystem.
+     * This is used during testing to ensure file operations work correctly.
+     */
+    private function createTempDirectory(): string
+    {
+        $path = sys_get_temp_dir().'/volume-test-'.uniqid();
+        if (! is_dir($path)) {
+            mkdir($path, 0755, true);
+        }
+
+        return $path;
     }
 
     /**

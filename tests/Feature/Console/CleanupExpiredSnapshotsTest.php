@@ -14,13 +14,19 @@ function createSnapshot(DatabaseServer $server, string $status, \Carbon\Carbon $
         'completed_at' => $status === 'completed' ? now() : null,
     ]);
 
+    // Create actual backup file in the volume's directory
+    $volumePath = $server->backup->volume->config['path'];
+    $filename = 'backup-'.uniqid().'.sql.gz';
+    $filePath = $volumePath.'/'.$filename;
+    file_put_contents($filePath, 'test backup content');
+
     $snapshot = Snapshot::create([
         'backup_job_id' => $job->id,
         'database_server_id' => $server->id,
         'backup_id' => $server->backup->id,
         'volume_id' => $server->backup->volume_id,
-        'storage_uri' => 'local:///tmp/test-backup-'.uniqid().'.sql.gz',
-        'file_size' => 1024,
+        'storage_uri' => 'local://'.$filePath,
+        'file_size' => filesize($filePath),
         'started_at' => now(),
         'database_name' => $server->database_name ?? 'testdb',
         'database_type' => $server->database_type,
@@ -42,6 +48,7 @@ test('command deletes only expired completed snapshots', function () {
 
     // Should be deleted: completed and expired (10 days old)
     $expiredCompleted = createSnapshot($server, 'completed', now()->subDays(10));
+    $expiredFilePath = $expiredCompleted->getStoragePath();
 
     // Should NOT be deleted: completed but not expired (3 days old)
     $recentCompleted = createSnapshot($server, 'completed', now()->subDays(3));
@@ -59,6 +66,7 @@ test('command deletes only expired completed snapshots', function () {
         ->assertSuccessful();
 
     expect(Snapshot::find($expiredCompleted->id))->toBeNull()
+        ->and(file_exists($expiredFilePath))->toBeFalse()
         ->and(Snapshot::find($recentCompleted->id))->not->toBeNull()
         ->and(Snapshot::find($expiredPending->id))->not->toBeNull()
         ->and(Snapshot::find($noRetentionSnapshot->id))->not->toBeNull();
@@ -69,11 +77,13 @@ test('command dry-run mode does not delete snapshots', function () {
     $server->backup->update(['retention_days' => 7]);
 
     $expiredSnapshot = createSnapshot($server, 'completed', now()->subDays(10));
+    $filePath = $expiredSnapshot->getStoragePath();
 
     artisan('snapshots:cleanup', ['--dry-run' => true])
         ->expectsOutput('Running in dry-run mode. No snapshots will be deleted.')
         ->expectsOutputToContain('1 snapshot(s) would be deleted')
         ->assertSuccessful();
 
-    expect(Snapshot::find($expiredSnapshot->id))->not->toBeNull();
+    expect(Snapshot::find($expiredSnapshot->id))->not->toBeNull()
+        ->and(file_exists($filePath))->toBeTrue();
 });

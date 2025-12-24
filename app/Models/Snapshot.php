@@ -262,12 +262,14 @@ class Snapshot extends Model
             $filesystemProvider = app(FilesystemProvider::class);
             $filesystem = $filesystemProvider->getForVolume($this->volume);
 
-            // Get the path component from the URI for filesystem operations
-            $storagePath = $this->getStoragePath();
+            // Get the relative path for filesystem operations
+            // For local volumes, the storage path is absolute, but we need the path
+            // relative to the volume root for Flysystem operations
+            $relativePath = $this->getFilename();
 
             // Delete the file if it exists
-            if ($filesystem->fileExists($storagePath)) {
-                $filesystem->delete($storagePath);
+            if ($filesystem->fileExists($relativePath)) {
+                $filesystem->delete($relativePath);
 
                 return true;
             }

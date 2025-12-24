@@ -25,13 +25,19 @@ function createSnapshotForServer(DatabaseServer $server, array $attributes = [])
         'completed_at' => now(),
     ]);
 
+    // Create actual backup file in the volume's directory
+    $volumePath = $server->backup->volume->config['path'];
+    $filename = 'backup-'.uniqid().'.sql.gz';
+    $filePath = $volumePath.'/'.$filename;
+    file_put_contents($filePath, 'test backup content');
+
     return Snapshot::create(array_merge([
         'backup_job_id' => $job->id,
         'database_server_id' => $server->id,
         'backup_id' => $server->backup->id,
         'volume_id' => $server->backup->volume_id,
-        'storage_uri' => 'local:///tmp/test-backup-'.uniqid().'.sql.gz',
-        'file_size' => 1024,
+        'storage_uri' => 'local://'.$filePath,
+        'file_size' => filesize($filePath),
         'started_at' => now(),
         'database_name' => $server->database_name ?? 'testdb',
         'database_type' => $server->database_type,
