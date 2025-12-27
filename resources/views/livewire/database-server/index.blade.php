@@ -44,11 +44,20 @@
                 {{ $server->host }}:{{ $server->port }}
             @endscope
 
-            @scope('cell_database_name', $server)
+            @scope('cell_database_names', $server)
                 @if($server->backup_all_databases)
                     <x-badge value="{{ __('All') }}" class="badge-info badge-soft" />
+                @elseif($server->database_names && count($server->database_names) > 0)
+                    @if(count($server->database_names) === 1)
+                        {{ $server->database_names[0] }}
+                    @else
+                        <span title="{{ implode(', ', $server->database_names) }}">
+                            {{ $server->database_names[0] }}
+                            <span class="text-base-content/50">+{{ count($server->database_names) - 1 }}</span>
+                        </span>
+                    @endif
                 @else
-                    {{ $server->database_name ?? '-' }}
+                    -
                 @endif
             @endscope
 

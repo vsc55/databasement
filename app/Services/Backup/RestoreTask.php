@@ -61,10 +61,10 @@ class RestoreTask
                 ],
                 'snapshot' => [
                     'id' => $snapshot->id,
+                    'database_name' => $snapshot->database_name,
                     'database_server' => [
                         'id' => $snapshot->databaseServer->id,
                         'name' => $snapshot->databaseServer->name,
-                        'database_name' => $snapshot->databaseServer->database_name,
                         'database_type' => $snapshot->databaseServer->database_type,
                     ],
                 ],

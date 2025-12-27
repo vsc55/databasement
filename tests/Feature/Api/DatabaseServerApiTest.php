@@ -25,7 +25,7 @@ test('authenticated users can list database servers via api', function () {
                     'host',
                     'port',
                     'database_type',
-                    'database_name',
+                    'database_names',
                     'backup_all_databases',
                     'description',
                     'created_at',

@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
  * @property string $database_type
  * @property string $username
  * @property string $password
- * @property string|null $database_name
+ * @property array<string>|null $database_names
  * @property bool $backup_all_databases
  * @property string|null $description
  * @property Carbon|null $created_at
@@ -34,7 +34,7 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|DatabaseServer newQuery()
  * @method static Builder<static>|DatabaseServer query()
  * @method static Builder<static>|DatabaseServer whereCreatedAt($value)
- * @method static Builder<static>|DatabaseServer whereDatabaseName($value)
+ * @method static Builder<static>|DatabaseServer whereDatabaseNames($value)
  * @method static Builder<static>|DatabaseServer whereDatabaseType($value)
  * @method static Builder<static>|DatabaseServer whereDescription($value)
  * @method static Builder<static>|DatabaseServer whereHost($value)
@@ -73,7 +73,7 @@ class DatabaseServer extends Model
         'database_type',
         'username',
         'password',
-        'database_name',
+        'database_names',
         'backup_all_databases',
         'description',
     ];
@@ -88,6 +88,7 @@ class DatabaseServer extends Model
             'port' => 'integer',
             'backup_all_databases' => 'boolean',
             'password' => 'encrypted',
+            'database_names' => 'array',
         ];
     }
 

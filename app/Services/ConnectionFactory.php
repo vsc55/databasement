@@ -30,7 +30,7 @@ class ConnectionFactory
         $dsn = $databaseType->buildDsn(
             $server->host,
             $server->port,
-            $database ?? $server->database_name
+            $database ?? ($server->database_names[0] ?? null)
         );
 
         return $this->createConnection($dsn, $server->username, $server->password, $timeout);

@@ -25,7 +25,11 @@ class DatabaseServerForm extends Form
 
     public string $password = '';
 
-    public ?string $database_name = null;
+    /** @var array<string> */
+    public array $database_names = [];
+
+    /** @var string Input field for manual database entry (comma-separated) */
+    public string $database_names_input = '';
 
     public bool $backup_all_databases = false;
 
@@ -56,7 +60,8 @@ class DatabaseServerForm extends Form
         $this->port = $server->port;
         $this->database_type = $server->database_type;
         $this->username = $server->username;
-        $this->database_name = $server->database_name;
+        $this->database_names = $server->database_names ?? [];
+        $this->database_names_input = implode(', ', $this->database_names);
         $this->backup_all_databases = $server->backup_all_databases;
         $this->description = $server->description;
         // Don't populate password for security
@@ -73,10 +78,30 @@ class DatabaseServerForm extends Form
     }
 
     /**
+     * Normalize database_names from either multiselect or comma-separated input
+     */
+    public function normalizeDatabaseNames(): void
+    {
+        // If multiselect is used (availableDatabases is populated), use database_names directly
+        if (! empty($this->availableDatabases)) {
+            return;
+        }
+
+        // Otherwise, parse from comma-separated input
+        if (! empty($this->database_names_input)) {
+            $this->database_names = array_values(array_filter(
+                array_map('trim', explode(',', $this->database_names_input))
+            ));
+        }
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function formValidate(): array
     {
+        $this->normalizeDatabaseNames();
+
         return $this->validate([
             'name' => 'required|string|max:255',
             'host' => 'required|string|max:255',
@@ -85,7 +110,8 @@ class DatabaseServerForm extends Form
             'username' => 'required|string|max:255',
             'password' => 'nullable',
             'backup_all_databases' => 'boolean',
-            'database_name' => $this->backup_all_databases ? 'nullable|string|max:255' : 'required|string|max:255',
+            'database_names' => $this->backup_all_databases ? 'nullable|array' : 'required|array|min:1',
+            'database_names.*' => 'string|max:255',
             'description' => 'nullable|string|max:1000',
             'volume_id' => 'required|exists:volumes,id',
             'recurrence' => 'required|string|in:'.implode(',', Backup::RECURRENCE_TYPES),
@@ -137,6 +163,9 @@ class DatabaseServerForm extends Form
         // Only update password if a new one is provided
         if (empty($validated['password'])) {
             unset($validated['password']);
+        }
+        if ($validated['backup_all_databases'] === true) {
+            $validated['database_names'] = null;
         }
 
         $this->server->update($validated);

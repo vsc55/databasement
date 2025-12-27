@@ -24,7 +24,7 @@ class DatabaseServerResource extends JsonResource
             'host' => $this->host,
             'port' => $this->port,
             'database_type' => $this->database_type,
-            'database_name' => $this->database_name,
+            'database_names' => $this->database_names,
             'backup_all_databases' => $this->backup_all_databases,
             'description' => $this->description,
             'created_at' => $this->created_at,

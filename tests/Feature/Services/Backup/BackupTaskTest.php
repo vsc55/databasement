@@ -115,7 +115,7 @@ test('run executes mysql and mariadb backup workflow successfully', function (st
         'database_type' => 'mysql',
         'username' => 'root',
         'password' => 'secret',
-        'database_name' => 'myapp',
+        'database_names' => ['myapp'],
     ]);
 
     $snapshots = $this->backupJobFactory->createSnapshots($databaseServer, 'manual');
@@ -145,7 +145,7 @@ test('run executes postgresql backup workflow successfully', function () {
         'database_type' => 'postgresql',
         'username' => 'postgres',
         'password' => 'pg_secret',
-        'database_name' => 'staging_db',
+        'database_names' => ['staging_db'],
     ], 's3');
 
     $snapshots = $this->backupJobFactory->createSnapshots($databaseServer, 'manual');
@@ -172,7 +172,7 @@ test('run throws exception for unsupported database type', function () {
         'database_type' => 'oracle',
         'username' => 'system',
         'password' => 'oracle',
-        'database_name' => 'orcl',
+        'database_names' => ['orcl'],
     ]);
 
     $snapshots = $this->backupJobFactory->createSnapshots($databaseServer, 'manual');
@@ -192,7 +192,7 @@ test('run throws exception when backup command failed', function () {
         'database_type' => 'mysql',
         'username' => 'root',
         'password' => 'secret',
-        'database_name' => 'myapp',
+        'database_names' => ['myapp'],
     ]);
 
     $snapshots = $this->backupJobFactory->createSnapshots($databaseServer, 'manual');
@@ -252,7 +252,7 @@ test('createSnapshots creates multiple snapshots when backup_all_databases is en
         'database_type' => 'mysql',
         'username' => 'root',
         'password' => 'secret',
-        'database_name' => null, // Not used when backup_all_databases is true
+        'database_names' => null, // Not used when backup_all_databases is true
         'backup_all_databases' => true,
     ]);
 
@@ -294,7 +294,7 @@ test('run executes backup for each database when backup_all_databases is enabled
         'database_type' => 'mysql',
         'username' => 'root',
         'password' => 'secret',
-        'database_name' => null,
+        'database_names' => null,
         'backup_all_databases' => true,
     ]);
 
@@ -334,7 +334,7 @@ test('createSnapshots throws exception when backup_all_databases is enabled but 
         'database_type' => 'mysql',
         'username' => 'root',
         'password' => 'secret',
-        'database_name' => null,
+        'database_names' => null,
         'backup_all_databases' => true,
     ]);
 

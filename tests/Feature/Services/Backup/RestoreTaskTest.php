@@ -120,7 +120,7 @@ test('run executes mysql restore workflow successfully', function (string $cliTy
         'database_type' => 'mysql',
         'username' => 'root',
         'password' => 'secret',
-        'database_name' => 'sourcedb',
+        'database_names' => ['sourcedb'],
     ]);
 
     $targetServer = createRestoreDatabaseServer([
@@ -130,7 +130,7 @@ test('run executes mysql restore workflow successfully', function (string $cliTy
         'database_type' => 'mysql',
         'username' => 'root',
         'password' => 'secret',
-        'database_name' => 'targetdb',
+        'database_names' => ['targetdb'],
     ]);
 
     // Create snapshot and update path for restore test
@@ -179,7 +179,7 @@ test('run executes postgresql restore workflow successfully', function () {
         'database_type' => 'postgresql',
         'username' => 'postgres',
         'password' => 'secret',
-        'database_name' => 'sourcedb',
+        'database_names' => ['sourcedb'],
     ]);
 
     $targetServer = createRestoreDatabaseServer([
@@ -189,7 +189,7 @@ test('run executes postgresql restore workflow successfully', function () {
         'database_type' => 'postgresql',
         'username' => 'postgres',
         'password' => 'secret',
-        'database_name' => 'targetdb',
+        'database_names' => ['targetdb'],
     ]);
 
     // Create snapshot and update path for restore test
@@ -229,7 +229,7 @@ test('run throws exception when database types are incompatible', function () {
         'database_type' => 'mysql',
         'username' => 'root',
         'password' => 'secret',
-        'database_name' => 'sourcedb',
+        'database_names' => ['sourcedb'],
     ]);
 
     $targetServer = createRestoreDatabaseServer([
@@ -239,7 +239,7 @@ test('run throws exception when database types are incompatible', function () {
         'database_type' => 'postgresql',
         'username' => 'postgres',
         'password' => 'secret',
-        'database_name' => 'targetdb',
+        'database_names' => ['targetdb'],
     ]);
 
     // Create snapshot and mark as completed
@@ -265,7 +265,7 @@ test('run throws exception when restore command failed', function () {
         'database_type' => 'mysql',
         'username' => 'root',
         'password' => 'secret',
-        'database_name' => 'sourcedb',
+        'database_names' => ['sourcedb'],
     ]);
 
     $targetServer = createRestoreDatabaseServer([
@@ -275,7 +275,7 @@ test('run throws exception when restore command failed', function () {
         'database_type' => 'mysql',
         'username' => 'root',
         'password' => 'secret',
-        'database_name' => 'targetdb',
+        'database_names' => ['targetdb'],
     ]);
 
     // Create snapshot and mark as completed
@@ -365,7 +365,7 @@ test('run throws exception for unsupported database type', function () {
         'database_type' => 'sqlite',
         'username' => '',
         'password' => '',
-        'database_name' => 'sourcedb',
+        'database_names' => ['sourcedb'],
     ]);
 
     $targetServer = createRestoreDatabaseServer([
@@ -375,7 +375,7 @@ test('run throws exception for unsupported database type', function () {
         'database_type' => 'sqlite',
         'username' => '',
         'password' => '',
-        'database_name' => 'targetdb',
+        'database_names' => ['targetdb'],
     ]);
 
     // Create snapshot and mark as completed

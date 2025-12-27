@@ -41,7 +41,7 @@ test('can create database server with valid data', function () {
         ->set('form.database_type', 'mysql')
         ->set('form.username', 'root')
         ->set('form.password', 'secret123')
-        ->set('form.database_name', 'myapp_production')
+        ->set('form.database_names_input', 'myapp_production')
         ->set('form.description', 'Main production database')
         ->set('form.volume_id', $volume->id)
         ->set('form.recurrence', 'daily')

@@ -39,7 +39,7 @@ function createSnapshotForServer(DatabaseServer $server, array $attributes = [])
         'storage_uri' => 'local://'.$filePath,
         'file_size' => filesize($filePath),
         'started_at' => now(),
-        'database_name' => $server->database_name ?? 'testdb',
+        'database_name' => $server->database_names[0] ?? 'testdb',
         'database_type' => $server->database_type,
         'database_host' => $server->host,
         'database_port' => $server->port,
@@ -102,7 +102,7 @@ test('can queue restore job with valid data', function () {
         'database_type' => 'postgresql',
     ]);
 
-    $snapshot = createSnapshotForServer($sourceServer, ['database_name' => 'test_db']);
+    $snapshot = createSnapshotForServer($sourceServer, ['database_names' => ['test_db']]);
 
     Livewire::test(RestoreModal::class)
         ->dispatch('open-restore-modal', targetServerId: $targetServer->id)

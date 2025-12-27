@@ -15,10 +15,10 @@ test('storage distribution chart builds doughnut chart data grouped by volume', 
     $volume1 = Volume::factory()->create(['name' => 'volume-one']);
     $volume2 = Volume::factory()->create(['name' => 'volume-two']);
 
-    $server1 = DatabaseServer::factory()->create(['database_name' => 'db1']);
+    $server1 = DatabaseServer::factory()->create(['database_names' => ['db1']]);
     $server1->backup->update(['volume_id' => $volume1->id]);
 
-    $server2 = DatabaseServer::factory()->create(['database_name' => 'db2']);
+    $server2 = DatabaseServer::factory()->create(['database_names' => ['db2']]);
     $server2->backup->update(['volume_id' => $volume2->id]);
 
     // Create snapshots on different volumes
@@ -56,7 +56,7 @@ test('storage distribution chart labels include formatted size', function () {
     $factory = app(BackupJobFactory::class);
 
     $volume = Volume::factory()->create(['name' => 'my-storage']);
-    $server = DatabaseServer::factory()->create(['database_name' => 'test_db']);
+    $server = DatabaseServer::factory()->create(['database_names' => ['test_db']]);
     $server->backup->update(['volume_id' => $volume->id]);
 
     $snapshots = $factory->createSnapshots($server, 'manual', $user->id);

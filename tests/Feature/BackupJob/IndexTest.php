@@ -25,8 +25,8 @@ test('can search backup jobs by server name', function () {
     $user = User::factory()->create();
     $factory = app(BackupJobFactory::class);
 
-    $server1 = DatabaseServer::factory()->create(['name' => 'Production MySQL', 'database_name' => 'production_db']);
-    $server2 = DatabaseServer::factory()->create(['name' => 'Development PostgreSQL', 'database_name' => 'development_db']);
+    $server1 = DatabaseServer::factory()->create(['name' => 'Production MySQL', 'database_names' => ['production_db']]);
+    $server2 = DatabaseServer::factory()->create(['name' => 'Development PostgreSQL', 'database_names' => ['development_db']]);
 
     $snapshots1 = $factory->createSnapshots($server1, 'manual', $user->id);
     $snapshots1[0]->job->update(['status' => 'completed']);
@@ -45,7 +45,7 @@ test('can filter backup jobs by status', function () {
     $user = User::factory()->create();
     $factory = app(BackupJobFactory::class);
 
-    $server = DatabaseServer::factory()->create(['name' => 'Test Server', 'database_name' => 'test_db']);
+    $server = DatabaseServer::factory()->create(['name' => 'Test Server', 'database_names' => ['test_db']]);
 
     $completedSnapshots = $factory->createSnapshots($server, 'manual', $user->id);
     $completedSnapshot = $completedSnapshots[0];
@@ -68,7 +68,7 @@ test('can filter backup jobs by multiple statuses', function () {
     $user = User::factory()->create();
     $factory = app(BackupJobFactory::class);
 
-    $server = DatabaseServer::factory()->create(['name' => 'Test Server', 'database_name' => 'test_db']);
+    $server = DatabaseServer::factory()->create(['name' => 'Test Server', 'database_names' => ['test_db']]);
 
     $completedSnapshots = $factory->createSnapshots($server, 'manual', $user->id);
     $completedSnapshot = $completedSnapshots[0];
@@ -97,7 +97,7 @@ test('can filter backup jobs by type', function () {
     $user = User::factory()->create();
     $factory = app(BackupJobFactory::class);
 
-    $server = DatabaseServer::factory()->create(['name' => 'Test Server', 'database_name' => 'test_db']);
+    $server = DatabaseServer::factory()->create(['name' => 'Test Server', 'database_names' => ['test_db']]);
 
     $snapshots = $factory->createSnapshots($server, 'manual', $user->id);
     $snapshots[0]->job->update(['status' => 'completed']);
@@ -125,7 +125,7 @@ test('can download snapshot from local storage', function () {
     ]);
 
     $server = DatabaseServer::factory()->create([
-        'database_name' => 'test_db',
+        'database_names' => ['test_db'],
     ]);
     $server->backup->update(['volume_id' => $volume->id]);
 
@@ -164,7 +164,7 @@ test('can download snapshot from s3 storage redirects to presigned url', functio
     ]);
 
     $server = DatabaseServer::factory()->create([
-        'database_name' => 'test_db',
+        'database_names' => ['test_db'],
     ]);
     $server->backup->update(['volume_id' => $volume->id]);
 
@@ -200,7 +200,7 @@ test('can delete snapshot', function () {
     $user = User::factory()->create();
     $factory = app(BackupJobFactory::class);
 
-    $server = DatabaseServer::factory()->create(['database_name' => 'test_db']);
+    $server = DatabaseServer::factory()->create(['database_names' => ['test_db']]);
 
     $snapshots = $factory->createSnapshots($server, 'manual', $user->id);
     $snapshot = $snapshots[0];

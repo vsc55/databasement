@@ -24,7 +24,7 @@ test('it throws exception when server has no backup configuration', function () 
 test('it creates a snapshot and dispatches backup job for single database', function () {
     // Factory automatically creates backup via afterCreating hook
     $server = DatabaseServer::factory()->create([
-        'database_name' => 'test_db',
+        'database_names' => ['test_db'],
         'backup_all_databases' => false,
     ]);
     $server->load('backup.volume');
@@ -43,7 +43,7 @@ test('it creates a snapshot and dispatches backup job for single database', func
 test('it tracks the user who triggered the backup', function () {
     $user = User::factory()->create();
     $server = DatabaseServer::factory()->create([
-        'database_name' => 'test_db',
+        'database_names' => ['test_db'],
         'backup_all_databases' => false,
     ]);
     $server->load('backup.volume');

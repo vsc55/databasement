@@ -155,20 +155,19 @@ $volumes = \App\Models\Volume::orderBy('name')->get()->map(fn($v) => [
                         {{ __('Loading databases...') }}
                     </div>
                 @elseif(count($form->availableDatabases) > 0)
-                    <x-select
-                        wire:model="form.database_name"
-                        label="{{ __('Select Database') }}"
+                    <x-choices
+                        wire:model="form.database_names"
+                        label="{{ __('Select Databases') }}"
                         :options="$form->availableDatabases"
-                        placeholder="{{ __('Choose a database to backup') }}"
-                        placeholder-value=""
-                        required
+                        hint="{{ __('Select one or more databases to backup') }}"
+                        searchable
                     />
                 @else
                     <x-input
-                        wire:model="form.database_name"
-                        label="{{ __('Database Name') }}"
-                        placeholder="{{ __('e.g., my_database') }}"
-                        hint="{{ __('Enter the database name manually') }}"
+                        wire:model="form.database_names_input"
+                        label="{{ __('Database Names') }}"
+                        placeholder="{{ __('e.g., db1, db2, db3') }}"
+                        hint="{{ __('Enter database names separated by commas') }}"
                         type="text"
                         required
                     />

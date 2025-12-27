@@ -171,7 +171,7 @@ function integrationCreateDatabaseServer(string $type): DatabaseServer
             'database_type' => 'mysql',
             'username' => config('backup.backup_test.mysql.username'),
             'password' => config('backup.backup_test.mysql.password'),
-            'database_name' => config('backup.backup_test.mysql.database'),
+            'database_names' => [config('backup.backup_test.mysql.database')],
             'description' => 'Integration test MySQL database server',
         ],
         'postgres' => [
@@ -181,7 +181,7 @@ function integrationCreateDatabaseServer(string $type): DatabaseServer
             'database_type' => 'postgresql',
             'username' => config('backup.backup_test.postgres.username'),
             'password' => config('backup.backup_test.postgres.password'),
-            'database_name' => config('backup.backup_test.postgres.database'),
+            'database_names' => [config('backup.backup_test.postgres.database')],
             'description' => 'Integration test PostgreSQL database server',
         ],
         default => throw new InvalidArgumentException("Unsupported database type: {$type}"),

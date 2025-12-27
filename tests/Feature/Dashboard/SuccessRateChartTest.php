@@ -10,7 +10,7 @@ test('success rate chart builds doughnut chart data', function () {
     $user = User::factory()->create();
     $factory = app(BackupJobFactory::class);
 
-    $server = DatabaseServer::factory()->create(['database_name' => 'test_db']);
+    $server = DatabaseServer::factory()->create(['database_names' => ['test_db']]);
 
     // Create jobs with different statuses
     $completedSnapshots = $factory->createSnapshots($server, 'manual', $user->id);

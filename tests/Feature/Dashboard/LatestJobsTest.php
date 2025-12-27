@@ -12,7 +12,7 @@ test('latest jobs displays recent jobs', function () {
 
     $server = DatabaseServer::factory()->create([
         'name' => 'Test Server',
-        'database_name' => 'test_db',
+        'database_names' => ['test_db'],
     ]);
 
     $snapshots = $factory->createSnapshots($server, 'manual', $user->id);
@@ -30,11 +30,11 @@ test('latest jobs can filter by status', function () {
 
     $completedServer = DatabaseServer::factory()->create([
         'name' => 'Completed Server',
-        'database_name' => 'completed_db',
+        'database_names' => ['completed_db'],
     ]);
     $failedServer = DatabaseServer::factory()->create([
         'name' => 'Failed Server',
-        'database_name' => 'failed_db',
+        'database_names' => ['failed_db'],
     ]);
 
     $completedSnapshots = $factory->createSnapshots($completedServer, 'manual', $user->id);

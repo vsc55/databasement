@@ -40,10 +40,12 @@ class BackupJobFactory
                 $snapshots[] = $this->createSnapshot($server, $databaseName, $method, $triggeredByUserId);
             }
         } else {
-            if (empty($server->database_name)) {
-                throw new \RuntimeException('No database name specified for the server to backup.');
+            if (empty($server->database_names)) {
+                throw new \RuntimeException('No database names specified for the server to backup.');
             }
-            $snapshots[] = $this->createSnapshot($server, $server->database_name, $method, $triggeredByUserId);
+            foreach ($server->database_names as $databaseName) {
+                $snapshots[] = $this->createSnapshot($server, $databaseName, $method, $triggeredByUserId);
+            }
         }
 
         return $snapshots;

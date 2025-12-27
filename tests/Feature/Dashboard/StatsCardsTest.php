@@ -10,7 +10,7 @@ test('stats cards calculates correct totals', function () {
     $user = User::factory()->create();
     $factory = app(BackupJobFactory::class);
 
-    $server = DatabaseServer::factory()->create(['database_name' => 'test_db']);
+    $server = DatabaseServer::factory()->create(['database_names' => ['test_db']]);
 
     // Create 3 completed jobs
     for ($i = 0; $i < 3; $i++) {
@@ -35,7 +35,7 @@ test('stats cards shows running jobs count', function () {
     $user = User::factory()->create();
     $factory = app(BackupJobFactory::class);
 
-    $server = DatabaseServer::factory()->create(['database_name' => 'test_db']);
+    $server = DatabaseServer::factory()->create(['database_names' => ['test_db']]);
 
     // Create 2 running jobs
     for ($i = 0; $i < 2; $i++) {

@@ -28,7 +28,7 @@ function createSnapshot(DatabaseServer $server, string $status, \Carbon\Carbon $
         'storage_uri' => 'local://'.$filePath,
         'file_size' => filesize($filePath),
         'started_at' => now(),
-        'database_name' => $server->database_name ?? 'testdb',
+        'database_name' => $server->database_names[0] ?? 'testdb',
         'database_type' => $server->database_type,
         'database_host' => $server->host,
         'database_port' => $server->port,

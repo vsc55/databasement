@@ -25,7 +25,7 @@ class DatabaseServerFactory extends Factory
             'database_type' => fake()->randomElement(['mysql', 'postgresql', 'mariadb', 'sqlite']),
             'username' => fake()->userName(),
             'password' => fake()->password(),
-            'database_name' => fake()->optional()->word(),
+            'database_names' => fake()->optional()->randomElements(['app', 'users', 'orders', 'products', 'analytics'], fake()->numberBetween(1, 3)),
             'description' => fake()->optional()->sentence(),
         ];
     }
