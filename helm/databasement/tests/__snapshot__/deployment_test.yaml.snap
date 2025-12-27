@@ -37,6 +37,11 @@ should render deployment with default values:
                   value: "false"
                 - name: APP_URL
                   value: http://localhost:8000
+                - name: APP_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: app-key
+                      name: RELEASE-NAME-databasement
                 - name: DB_CONNECTION
                   value: sqlite
                 - name: DB_DATABASE
@@ -95,6 +100,11 @@ should render deployment with default values:
                   value: "false"
                 - name: APP_URL
                   value: http://localhost:8000
+                - name: APP_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: app-key
+                      name: RELEASE-NAME-databasement
                 - name: DB_CONNECTION
                   value: sqlite
                 - name: DB_DATABASE
@@ -166,6 +176,11 @@ should render deployment with mysql database:
                   value: "false"
                 - name: APP_URL
                   value: http://localhost:8000
+                - name: APP_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: app-key
+                      name: RELEASE-NAME-databasement
                 - name: DB_CONNECTION
                   value: mysql
                 - name: DB_HOST
@@ -235,6 +250,11 @@ should render deployment with mysql database:
                   value: "false"
                 - name: APP_URL
                   value: http://localhost:8000
+                - name: APP_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: app-key
+                      name: RELEASE-NAME-databasement
                 - name: DB_CONNECTION
                   value: mysql
                 - name: DB_HOST

@@ -4,7 +4,27 @@ chart:
   appVersion: 0.1.0
 templates:
   - templates/deployment.yaml
+values:
+  - ../values.yaml
+set:
+  app.key: "base64:test-key-for-unit-tests"
 tests:
+  - it: should fail when app.key is not set
+    set:
+      app.key: ""
+      app.existingSecret: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: "app.key is required. Generate one with: docker run --rm davidcrty/databasement:latest php artisan key:generate --show"
+
+  - it: should render when app.existingSecret is used instead of app.key
+    set:
+      app.key: ""
+      app.existingSecret: "my-existing-secret"
+    asserts:
+      - isKind:
+          of: Deployment
+
   - it: should render deployment with default values
     asserts:
       - matchSnapshot: {}

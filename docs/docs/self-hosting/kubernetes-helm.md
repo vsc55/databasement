@@ -68,6 +68,23 @@ database:
   password: your-secure-password
 ```
 
+### Configuration
+
+See [values.yaml](values.yaml) for the full list of configurable parameters.
+
+For all available environment variables, see the [Configuration Documentation](https://david-crty.github.io/databasement/self-hosting/configuration).
+
+### Custom Environment Variables
+
+Use the `env` parameter to pass additional environment variables:
+
+```yaml
+env:
+  AWS_ACCESS_KEY_ID: "your-access-key"
+  AWS_SECRET_ACCESS_KEY: "your-secret-key"
+  AWS_DEFAULT_REGION: "us-east-1"
+```
+
 ### 4. Install the Chart
 
 ```bash

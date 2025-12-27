@@ -1,4 +1,13 @@
 {{/*
+Validate required values
+*/}}
+{{- define "databasement.validateValues" -}}
+{{- if and (not .Values.app.key) (not .Values.app.existingSecret) -}}
+{{- fail "app.key is required. Generate one with: docker run --rm davidcrty/databasement:latest php artisan key:generate --show" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "databasement.name" -}}
