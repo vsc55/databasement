@@ -129,7 +129,7 @@ $volumes = \App\Models\Volume::orderBy('name')->get()->map(fn($v) => [
     </div>
 
     <!-- Step 2: Database Selection (only shown after successful connection) -->
-    @if($form->connectionTestSuccess)
+    @if($form->connectionTestSuccess or $isEdit)
         <x-hr />
 
         <div class="space-y-4">
@@ -143,7 +143,7 @@ $volumes = \App\Models\Volume::orderBy('name')->get()->map(fn($v) => [
             <div class="p-4 rounded-lg bg-base-200">
                 <x-checkbox
                     wire:model.live="form.backup_all_databases"
-                    label="{{ __('Backup all databases') }}"
+                    :label="$form->availableDatabases ? __('Backup all databases') . ' (' . count($form->availableDatabases) . ' available)' : __('Backup all databases')"
                     hint="{{ __('All user databases will be backed up. System databases are automatically excluded.') }}"
                 />
             </div>

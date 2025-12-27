@@ -70,12 +70,6 @@ class DatabaseServerForm extends Form
             $this->recurrence = $backup->recurrence;
             $this->retention_days = $backup->retention_days;
         }
-
-        // Mark connection as already tested for existing servers
-        // and load available databases
-        $this->connectionTestSuccess = true;
-        $this->connectionTestMessage = __('Connection verified');
-        $this->loadAvailableDatabases();
     }
 
     /**
