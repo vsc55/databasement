@@ -250,7 +250,7 @@ tests:
   # Custom environment variables tests
   - it: should add custom env vars to app container
     set:
-      env:
+      extraEnv:
         AWS_REGION: us-east-1
         CUSTOM_VAR: my-value
     asserts:
@@ -270,7 +270,7 @@ tests:
       worker:
         enabled: true
         separateDeployment: false
-      env:
+      extraEnv:
         AWS_REGION: eu-west-1
     asserts:
       - contains:
@@ -284,7 +284,7 @@ tests:
       worker:
         enabled: true
         separateDeployment: true
-      env:
+      extraEnv:
         QUEUE_CONNECTION: redis
     asserts:
       - documentIndex: 1
@@ -293,3 +293,59 @@ tests:
           content:
             name: QUEUE_CONNECTION
             value: "redis"
+
+  # extraEnvFrom tests
+  - it: should add envFrom with secretRef to app container
+    set:
+      extraEnvFrom:
+        - secretRef:
+            name: my-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: my-secret
+
+  - it: should add envFrom with configMapRef to app container
+    set:
+      extraEnvFrom:
+        - configMapRef:
+            name: my-config
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: my-config
+
+  - it: should add envFrom to worker sidecar container
+    set:
+      worker:
+        enabled: true
+        separateDeployment: false
+      extraEnvFrom:
+        - secretRef:
+            name: aws-credentials
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[1].envFrom
+          content:
+            secretRef:
+              name: aws-credentials
+
+  - it: should add envFrom to separate worker deployment
+    set:
+      worker:
+        enabled: true
+        separateDeployment: true
+      extraEnvFrom:
+        - secretRef:
+            name: worker-secrets
+    asserts:
+      - documentIndex: 1
+        contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: worker-secrets

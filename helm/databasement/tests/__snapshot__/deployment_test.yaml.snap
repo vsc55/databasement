@@ -73,13 +73,7 @@ should render deployment with default values:
                 initialDelaySeconds: 10
                 periodSeconds: 5
                 timeoutSeconds: 3
-              resources:
-                limits:
-                  cpu: 500m
-                  memory: 512Mi
-                requests:
-                  cpu: 100m
-                  memory: 256Mi
+              resources: null
               securityContext:
                 runAsGroup: 1000
                 runAsNonRoot: true
@@ -223,13 +217,7 @@ should render deployment with mysql database:
                 initialDelaySeconds: 10
                 periodSeconds: 5
                 timeoutSeconds: 3
-              resources:
-                limits:
-                  cpu: 500m
-                  memory: 512Mi
-                requests:
-                  cpu: 100m
-                  memory: 256Mi
+              resources: null
               securityContext:
                 runAsGroup: 1000
                 runAsNonRoot: true

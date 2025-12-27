@@ -73,7 +73,7 @@ Create the name of the service account to use
 {{/*
 Common environment variables for app and worker containers
 */}}
-{{- define "databasement.envVars" -}}
+{{- define "databasement.env" -}}
 - name: APP_NAME
   value: {{ .Values.app.name | quote }}
 - name: APP_ENV
@@ -127,8 +127,17 @@ Common environment variables for app and worker containers
   value: {{ .Values.logging.channel | quote }}
 - name: LOG_LEVEL
   value: {{ .Values.logging.level | quote }}
-{{- range $key, $value := .Values.env }}
+{{- range $key, $value := .Values.extraEnv }}
 - name: {{ $key }}
   value: {{ $value | quote }}
+{{- end }}
+{{- end }}
+
+{{/*
+envFrom configuration for app and worker containers
+*/}}
+{{- define "databasement.envFrom" -}}
+{{- with .Values.extraEnvFrom }}
+{{ toYaml . }}
 {{- end }}
 {{- end }}

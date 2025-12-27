@@ -29,23 +29,6 @@ app:
 #      secretName: ""
 #      secretKey: ""
 
-# Worker configuration
-worker:
-  enabled: true
-  # Deploy worker as separate deployment (requires ReadWriteMany storage or external database)
-  # When false, worker runs as sidecar container in the same pod as the app
-  separateDeployment: false
-  replicaCount: 1
-  command: "php artisan queue:work --queue=backups,default --tries=3 --timeout=3600 --sleep=3 --max-jobs=1000"
-  resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 256Mi
-
-
 # Database configuration
 database:
   # Database driver: sqlite, mysql, pgsql
@@ -64,11 +47,43 @@ database:
 #      secretName: ""
 #      secretKey: ""
 
+# Extra environment variables to add to app and worker containers
+# See available variables on https://david-crty.github.io/databasement/self-hosting/configuration
+extraEnv: {}
+#  AWS_REGION: us-east-1
+extraEnvFrom: []
+#  - secretRef:
+#      name: my-secret
+#  - configMapRef:
+#      name: my-config
+
+# Extra volumes and mounts to add to app and worker containers
+# See https://kubernetes.io/docs/concepts/storage/volumes/ for more info
+extraVolumeMounts: {}
+extraVolumes: {}
+
+# Worker configuration
+worker:
+  enabled: true
+  command: "php artisan queue:work --queue=backups,default --tries=3 --timeout=3600 --sleep=3 --max-jobs=1000"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  # Deploy worker as separate deployment (requires ReadWriteMany storage or external database)
+  # When false (default), worker runs as sidecar container in the same pod as the app
+  separateDeployment: false
+  replicaCount: 1
+
 # Logging
 logging:
   channel: stderr
   level: warning
 
+# Ingress
 ingress:
   enabled: false
   className: ""
@@ -77,14 +92,6 @@ ingress:
     # cert-manager.io/cluster-issuer: letsencrypt-prod
   host: databasement.local
   tlsSecretName: ""
-
-resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 256Mi
 
 # Persistence for storage volume
 persistence:
@@ -95,16 +102,6 @@ persistence:
   size: 10Gi
   annotations: {}
   path: /data
-
-extraVolumeMounts: {}
-extraVolumes: {}
-
-# Extra environment variables to add to app and worker containers
-# Example:
-#   env:
-#     AWS_REGION: us-east-1
-#     CUSTOM_VAR: value
-env: {}
 
 # Liveness and readiness probes
 livenessProbe:

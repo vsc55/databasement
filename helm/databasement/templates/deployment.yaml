@@ -48,7 +48,11 @@ spec:
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
           env:
-            {{ include "databasement.envVars" . | nindent 12 }}
+            {{ include "databasement.env" . | nindent 12 }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
           livenessProbe:
             {{ toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
@@ -71,7 +75,11 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["sh", "-c", "php artisan db:wait && {{ .Values.worker.command }}"]
           env:
-            {{ include "databasement.envVars" . | nindent 12 }}
+            {{ include "databasement.env" . | nindent 12 }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{ toYaml .Values.worker.resources | nindent 12 }}
           volumeMounts:
@@ -149,7 +157,11 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["sh", "-c", "php artisan db:wait && {{ .Values.worker.command }}"]
           env:
-            {{ include "databasement.envVars" . | nindent 12 }}
+            {{ include "databasement.env" . | nindent 12 }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{ toYaml .Values.worker.resources | nindent 12 }}
           volumeMounts:
