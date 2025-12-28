@@ -95,6 +95,11 @@ class GitInfo
         return config('app.github_repo', 'https://github.com/David-Crty/databasement');
     }
 
+    public static function getGitHubRepoShort(): string
+    {
+        return trim(str_replace('https://', '', self::getGitHubRepo()), '/');
+    }
+
     /**
      * Get the URL to a specific commit on GitHub.
      */

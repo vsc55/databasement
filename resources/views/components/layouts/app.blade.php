@@ -96,6 +96,7 @@
             $commitHash = \App\Support\GitInfo::getCommitHash();
             $commitUrl = \App\Support\GitInfo::getCommitUrl();
             $githubRepo = \App\Support\GitInfo::getGitHubRepo();
+            $githubRepoShort = \App\Support\GitInfo::getGitHubRepoShort();
             $newIssueUrl = \App\Support\GitInfo::getNewIssueUrl();
         @endphp
         <footer class="mt-12 py-6 border-t border-base-300">
@@ -108,7 +109,7 @@
                     <span class="hidden sm:inline">·</span>
                     <a href="{{ $githubRepo }}" target="_blank" rel="noopener" class="link link-hover flex items-center gap-1">
                         <x-fab-github class="w-4 h-4" />
-                        GitHub
+                        {{ $githubRepoShort }}
                     </a>
                 </div>
                 <div class="flex items-center gap-4">
