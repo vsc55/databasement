@@ -48,25 +48,15 @@ function createSnapshotForServer(DatabaseServer $server, array $attributes = [])
     ], $attributes));
 }
 
-test('modal can be rendered', function () {
-    $targetServer = DatabaseServer::factory()->create([
-        'database_type' => 'mysql',
-    ]);
-
-    Livewire::test(RestoreModal::class)
-        ->dispatch('open-restore-modal', targetServerId: $targetServer->id)
-        ->assertOk();
-});
-
-test('can navigate through restore wizard steps', function () {
+test('can navigate through restore wizard steps', function (string $databaseType) {
     // Create target server
     $targetServer = DatabaseServer::factory()->create([
-        'database_type' => 'mysql',
+        'database_type' => $databaseType,
     ]);
 
     // Create source server with snapshot
     $sourceServer = DatabaseServer::factory()->create([
-        'database_type' => 'mysql',
+        'database_type' => $databaseType,
     ]);
 
     $snapshot = createSnapshotForServer($sourceServer);
@@ -89,17 +79,17 @@ test('can navigate through restore wizard steps', function () {
 
     // Step 3: Enter schema name
     $component->assertSet('currentStep', 3);
-});
+})->with(['mysql', 'postgresql', 'mariadb', 'sqlite']);
 
-test('can queue restore job with valid data', function () {
+test('can queue restore job with valid data', function (string $databaseType) {
     Queue::fake();
 
     $targetServer = DatabaseServer::factory()->create([
-        'database_type' => 'postgresql',
+        'database_type' => $databaseType,
     ]);
 
     $sourceServer = DatabaseServer::factory()->create([
-        'database_type' => 'postgresql',
+        'database_type' => $databaseType,
     ]);
 
     $snapshot = createSnapshotForServer($sourceServer, ['database_names' => ['test_db']]);
@@ -129,7 +119,7 @@ test('can queue restore job with valid data', function () {
     // Verify the job was pushed with the restore ID
     $pushedJob = Queue::pushed(ProcessRestoreJob::class)->first();
     expect($pushedJob->restoreId)->toBe($restore->id);
-});
+})->with(['mysql', 'postgresql', 'mariadb', 'sqlite']);
 
 test('only shows compatible servers with same database type', function () {
     $targetServer = DatabaseServer::factory()->create([
@@ -156,13 +146,13 @@ test('only shows compatible servers with same database type', function () {
         ->assertDontSee($postgresServer->name);
 });
 
-test('can go back to previous steps', function () {
+test('can go back to previous steps', function (string $databaseType) {
     $targetServer = DatabaseServer::factory()->create([
-        'database_type' => 'mysql',
+        'database_type' => $databaseType,
     ]);
 
     $sourceServer = DatabaseServer::factory()->create([
-        'database_type' => 'mysql',
+        'database_type' => $databaseType,
     ]);
 
     $snapshot = createSnapshotForServer($sourceServer);
@@ -178,4 +168,4 @@ test('can go back to previous steps', function () {
         ->assertSet('currentStep', 3)
         ->call('previousStep')
         ->assertSet('currentStep', 2);
-});
+})->with(['mysql', 'postgresql', 'mariadb', 'sqlite']);
