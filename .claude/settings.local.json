@@ -24,7 +24,8 @@
       "Bash(helm unittest:*)",
       "Bash(helm lint:*)",
       "Bash(helm template:*)",
-      "WebFetch(domain:daisyui.com)"
+      "WebFetch(domain:daisyui.com)",
+      "Bash(make start:*)"
     ],
     "deny": [],
     "ask": []

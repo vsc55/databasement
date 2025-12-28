@@ -128,7 +128,7 @@ test('sqlite backup and restore workflow', function () {
 
     expect($this->snapshot->job->status)->toBe('completed');
     expect($this->snapshot->file_size)->toBeGreaterThan(0);
-    expect($this->snapshot->database_host)->toBeNull();
+    expect($this->snapshot->getDatabaseServerMetadata()['host'])->toBeNull();
 
     // Verify backup file
     $backupFile = integrationFindLatestBackupFile();

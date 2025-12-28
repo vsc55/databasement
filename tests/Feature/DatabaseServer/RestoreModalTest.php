@@ -31,20 +31,22 @@ function createSnapshotForServer(DatabaseServer $server, array $attributes = [])
     $filePath = $volumePath.'/'.$filename;
     file_put_contents($filePath, 'test backup content');
 
+    $volume = $server->backup->volume;
+    $databaseName = $server->database_names[0] ?? 'testdb';
+
     return Snapshot::create(array_merge([
         'backup_job_id' => $job->id,
         'database_server_id' => $server->id,
         'backup_id' => $server->backup->id,
-        'volume_id' => $server->backup->volume_id,
+        'volume_id' => $volume->id,
         'storage_uri' => 'local://'.$filePath,
         'file_size' => filesize($filePath),
         'started_at' => now(),
-        'database_name' => $server->database_names[0] ?? 'testdb',
+        'database_name' => $databaseName,
         'database_type' => $server->database_type,
-        'database_host' => $server->host,
-        'database_port' => $server->port,
         'compression_type' => 'gzip',
         'method' => 'manual',
+        'metadata' => Snapshot::generateMetadata($server, $databaseName, $volume),
     ], $attributes));
 }
 

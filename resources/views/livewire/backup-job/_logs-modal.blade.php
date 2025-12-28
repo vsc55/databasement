@@ -1,9 +1,10 @@
 <x-modal wire:model="showLogsModal" title="{{ __('Job Logs') }}" class="backdrop-blur" box-class="w-11/12 max-w-6xl max-h-[90vh]">
     @if($this->selectedJob)
-        <div class="space-y-4">
+        <div class="space-y-4" x-data="{ showMetadata: false }">
             <!-- Job Info Header -->
             @php
                 $triggeredBy = $this->selectedJob->snapshot?->triggeredBy ?? $this->selectedJob->restore?->triggeredBy;
+                $snapshot = $this->selectedJob->snapshot ?? $this->selectedJob->restore?->snapshot;
             @endphp
             <div class="p-4 bg-base-200 rounded-lg space-y-2">
                 <div class="flex items-center justify-between">
@@ -26,17 +27,28 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <div class="text-sm text-base-content/70">{{ __('Status') }}</div>
-                        @if($this->selectedJob->status === 'completed')
-                            <x-badge value="{{ __('Completed') }}" class="badge-success" />
-                        @elseif($this->selectedJob->status === 'failed')
-                            <x-badge value="{{ __('Failed') }}" class="badge-error" />
-                        @elseif($this->selectedJob->status === 'running')
-                            <x-badge value="{{ __('Running') }}" class="badge-warning" />
-                        @else
-                            <x-badge value="{{ ucfirst($this->selectedJob->status) }}" class="badge-info" />
+                    <div class="flex items-center gap-4">
+                        @if($snapshot?->metadata)
+                            <x-button
+                                label="{{ __('Metadata') }}"
+                                icon="o-document-text"
+                                class="btn-ghost btn-sm"
+                                x-on:click="showMetadata = !showMetadata"
+                                ::class="showMetadata && 'btn-active'"
+                            />
                         @endif
+                        <div class="text-right">
+                            <div class="text-sm text-base-content/70">{{ __('Status') }}</div>
+                            @if($this->selectedJob->status === 'completed')
+                                <x-badge value="{{ __('Completed') }}" class="badge-success" />
+                            @elseif($this->selectedJob->status === 'failed')
+                                <x-badge value="{{ __('Failed') }}" class="badge-error" />
+                            @elseif($this->selectedJob->status === 'running')
+                                <x-badge value="{{ __('Running') }}" class="badge-warning" />
+                            @else
+                                <x-badge value="{{ ucfirst($this->selectedJob->status) }}" class="badge-info" />
+                            @endif
+                        </div>
                     </div>
                 </div>
                 <div class="text-sm text-base-content/70">
@@ -52,6 +64,15 @@
                     @endif
                 </div>
             </div>
+
+            <!-- Metadata Panel -->
+            @if($snapshot?->metadata)
+                <div x-show="showMetadata" x-collapse>
+                    <div class="p-4 bg-base-300 rounded-lg">
+                        <pre class="text-xs font-mono whitespace-pre-wrap overflow-x-auto">{{ json_encode($snapshot->metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+                    </div>
+                </div>
+            @endif
 
             <!-- Logs Table -->
             @php
