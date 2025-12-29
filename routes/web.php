@@ -43,6 +43,10 @@ Route::middleware(['auth'])->group(function () {
     // Users index - viewable by all (actions restricted in component)
     Route::get('users', \App\Livewire\User\Index::class)
         ->name('users.index');
+
+    // Configuration - read-only view of app configuration
+    Route::get('configuration', \App\Livewire\Configuration\Index::class)
+        ->name('configuration.index');
 });
 
 // Action routes - authorization handled by Policies in components

@@ -54,6 +54,7 @@
                 <x-menu-item title="{{ __('Volumes') }}" icon="o-circle-stack" link="{{ route('volumes.index') }}" wire:navigate />
                 <x-menu-item title="{{ __('Users') }}" icon="o-users" link="{{ route('users.index') }}" wire:navigate />
                 <x-menu-separator />
+                <x-menu-item title="{{ __('Configuration') }}" icon="o-cog-6-tooth" link="{{ route('configuration.index') }}" wire:navigate />
                 <x-menu-item title="{{ __('API Docs') }}" no-wire-navigate="true" icon="o-document-text" link="{{ route('scramble.docs.ui') }}" />
             </x-menu>
 
@@ -119,6 +120,10 @@
                         </a>
                         <span>·</span>
                     @endif
+                    <a href="https://david-crty.github.io/databasement/" target="_blank" rel="noopener" class="link link-hover">
+                        Documentation
+                    </a>
+                    <span>·</span>
                     <a href="{{ $newIssueUrl }}" target="_blank" rel="noopener" class="link link-hover">
                         Report an issue
                     </a>

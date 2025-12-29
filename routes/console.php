@@ -8,11 +8,11 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Run daily backups every day at 2:00 AM
-Schedule::command('backups:run daily')->dailyAt('02:00');
+// Run daily backups (default: every day at 2:00 AM)
+Schedule::command('backups:run daily')->cron(config('backup.daily_cron'));
 
-// Run weekly backups every Sunday at 3:00 AM
-Schedule::command('backups:run weekly')->weeklyOn(0, '03:00');
+// Run weekly backups (default: every Sunday at 3:00 AM)
+Schedule::command('backups:run weekly')->cron(config('backup.weekly_cron'));
 
-// Cleanup expired snapshots every day at 3:00 AM
-Schedule::command('snapshots:cleanup')->dailyAt('03:00');
+// Cleanup expired snapshots (default: every day at 4:00 AM)
+Schedule::command('snapshots:cleanup')->cron(config('backup.cleanup_cron'));
