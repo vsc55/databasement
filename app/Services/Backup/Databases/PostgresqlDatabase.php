@@ -7,6 +7,14 @@ class PostgresqlDatabase implements DatabaseInterface
     /** @var array<string, mixed> */
     private array $config;
 
+    private const DUMP_OPTIONS = [
+        '--clean',                  // Add DROP statements before CREATE
+        '--if-exists',              // Use IF EXISTS with DROP to avoid errors
+        '--no-owner',               // Don't output ownership commands (more portable)
+        '--no-privileges',          // Don't output GRANT/REVOKE (more portable)
+        '--quote-all-identifiers',  // Quote all identifiers (safer for reserved words)
+    ];
+
     public function handles(mixed $type): bool
     {
         return in_array(strtolower($type ?? ''), ['postgresql', 'postgres', 'pgsql']);
@@ -23,8 +31,9 @@ class PostgresqlDatabase implements DatabaseInterface
     public function getDumpCommandLine(string $outputPath): string
     {
         return sprintf(
-            'PGPASSWORD=%s pg_dump --clean --if-exists --no-owner --no-privileges --quote-all-identifiers --host=%s --port=%s --username=%s %s -f %s',
+            'PGPASSWORD=%s pg_dump %s --host=%s --port=%s --username=%s %s -f %s',
             escapeshellarg($this->config['pass']),
+            implode(' ', self::DUMP_OPTIONS),
             escapeshellarg($this->config['host']),
             escapeshellarg((string) $this->config['port']),
             escapeshellarg($this->config['user']),

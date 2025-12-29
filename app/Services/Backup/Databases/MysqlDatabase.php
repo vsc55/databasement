@@ -7,6 +7,14 @@ class MysqlDatabase implements DatabaseInterface
     /** @var array<string, mixed> */
     private array $config;
 
+    private const DUMP_OPTIONS = [
+        '--routines',           // Include stored procedures and functions
+        '--add-drop-table',     // Add DROP TABLE before each CREATE TABLE
+        '--complete-insert',    // Use complete INSERT statements with column names
+        '--hex-blob',           // Encode binary data as hex for safer transport
+        '--quote-names',        // Quote identifiers with backticks
+    ];
+
     /** @var array<string, array<string, string>> */
     private array $mysqlCli = [
         'mariadb' => [
@@ -39,12 +47,16 @@ class MysqlDatabase implements DatabaseInterface
 
     public function getDumpCommandLine(string $outputPath): string
     {
-        $sslFlag = $this->getMysqlCliType() === 'mariadb' ? '--skip_ssl ' : '';
+        $options = self::DUMP_OPTIONS;
+
+        if ($this->getMysqlCliType() === 'mariadb') {
+            $options[] = '--skip_ssl';
+        }
 
         return sprintf(
-            '%s --routines --add-drop-table --complete-insert --hex-blob --quote-names %s--host=%s --port=%s --user=%s --password=%s %s > %s',
+            '%s %s --host=%s --port=%s --user=%s --password=%s %s > %s',
             $this->mysqlCli[$this->getMysqlCliType()]['dump'],
-            $sslFlag,
+            implode(' ', $options),
             escapeshellarg($this->config['host']),
             escapeshellarg((string) $this->config['port']),
             escapeshellarg($this->config['user']),
