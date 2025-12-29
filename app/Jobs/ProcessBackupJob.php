@@ -23,7 +23,7 @@ class ProcessBackupJob implements ShouldQueue
     /**
      * The maximum number of seconds the job can run.
      */
-    public int $timeout = 3600; // 1 hour
+    public int $timeout = 7200; // 2 hour
 
     /**
      * The number of seconds to wait before retrying the job.

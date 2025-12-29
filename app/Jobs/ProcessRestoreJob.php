@@ -25,7 +25,7 @@ class ProcessRestoreJob implements ShouldQueue
     /**
      * The maximum number of seconds the job can run.
      */
-    public int $timeout = 3600; // 1 hour
+    public int $timeout = 7200; // 2 hour
 
     /**
      * Create a new job instance.
