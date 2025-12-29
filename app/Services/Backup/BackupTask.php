@@ -9,6 +9,7 @@ use App\Models\Volume;
 use App\Services\Backup\Databases\MysqlDatabase;
 use App\Services\Backup\Databases\PostgresqlDatabase;
 use App\Services\Backup\Filesystems\FilesystemProvider;
+use App\Support\Filesystem;
 use App\Support\Formatters;
 
 class BackupTask
@@ -30,21 +31,16 @@ class BackupTask
     {
         $databaseServer = $snapshot->databaseServer;
         $job = $snapshot->job;
+        $isSqlite = $databaseServer->database_type === 'sqlite';
 
         // Configure shell processor to log to job
         $this->setLogger($job);
-
-        $workingDirectory = rtrim(config('backup.tmp_folder'), '/');
-        $isSqlite = $databaseServer->database_type === 'sqlite';
-        $extension = $isSqlite ? 'db' : 'sql';
-        $workingFile = $workingDirectory.'/'.$snapshot->id.'.'.$extension;
-
         try {
-            if (! is_dir($workingDirectory)) {
-                mkdir($workingDirectory, 0755, true);
-            }
+            // Create unique working directory for this job
+            $workingDirectory = Filesystem::createWorkingDirectory('backup', $snapshot->id);
+            $extension = $isSqlite ? 'db' : 'sql';
+            $workingFile = $workingDirectory.'/dump.'.$extension;
 
-            // Mark as running
             $job->markRunning();
 
             // Use the database name from the snapshot (important for multi-database backups)
@@ -59,10 +55,13 @@ class BackupTask
                 throw new \RuntimeException("Failed to get file size for: {$archive}");
             }
             $humanFileSize = Formatters::humanFileSize($fileSize);
+            $filename = $this->generateBackupFilename($databaseServer, $databaseName);
+            $storageUri = $this->buildStorageUri($snapshot->volume, $filename);
             $job->log("Transferring backup ({$humanFileSize}) to volume: {$snapshot->volume->name}", 'info', [
                 'volume_type' => $snapshot->volume->type,
+                'source' => $archive,
+                'destination' => $storageUri,
             ]);
-            $filename = $this->generateBackupFilename($databaseServer, $databaseName);
             $transferStart = microtime(true);
             $this->filesystemProvider->transfer(
                 $snapshot->volume,
@@ -70,14 +69,7 @@ class BackupTask
                 $filename
             );
             $transferDuration = Formatters::humanDuration((int) round((microtime(true) - $transferStart) * 1000));
-
-            // Build the storage URI based on volume type
-            $storageUri = $this->buildStorageUri($snapshot->volume, $filename);
-
-            $job->log('Transfer completed successfully in '.$transferDuration, 'success', [
-                'storage_uri' => $storageUri,
-                'duration' => $transferDuration,
-            ]);
+            $job->log('Transfer completed successfully in '.$transferDuration, 'success');
 
             $checksum = hash_file('sha256', $archive);
             if ($checksum === false) {
@@ -111,13 +103,10 @@ class BackupTask
 
             throw $e;
         } finally {
-            // Clean up temporary files
+            // Clean up working directory and all files within
             $job->log('Cleaning up temporary files', 'info');
-            if (file_exists($workingFile)) {
-                unlink($workingFile);
-            }
-            if (isset($archive) && file_exists($archive)) {
-                unlink($archive);
+            if (isset($workingDirectory)) {
+                Filesystem::cleanupDirectory($workingDirectory);
             }
         }
     }

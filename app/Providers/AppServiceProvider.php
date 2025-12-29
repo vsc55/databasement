@@ -48,11 +48,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->ensureBackupTmpFolderExists();
+
         Scramble::configure()
             ->withDocumentTransformers(function (OpenApi $openApi) {
                 $openApi->secure(
                     SecurityScheme::http('bearer')
                 );
             });
+    }
+
+    private function ensureBackupTmpFolderExists(): void
+    {
+        $backupTmpFolder = config('backup.tmp_folder');
+
+        if ($backupTmpFolder && ! is_dir($backupTmpFolder)) {
+            mkdir($backupTmpFolder, 0755, true);
+        }
     }
 }

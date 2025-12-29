@@ -14,6 +14,7 @@ use App\Services\Backup\Databases\MysqlDatabase;
 use App\Services\Backup\Databases\PostgresqlDatabase;
 use App\Services\Backup\Filesystems\FilesystemProvider;
 use App\Services\ConnectionFactory;
+use App\Support\Filesystem;
 use PDO;
 use PDOException;
 
@@ -33,24 +34,20 @@ class RestoreTask
      *
      * @throws \Exception
      */
-    public function run(
-        Restore $restore,
-        string $workingDirectory = '/tmp'
-    ): Restore {
+    public function run(Restore $restore): Restore
+    {
         $targetServer = $restore->targetServer;
         $snapshot = $restore->snapshot;
+        $job = $restore->job;
 
         $this->validateCompatibility($targetServer, $snapshot);
 
-        $job = $restore->job;
-
-        // Configure shell processor to log to job
         $this->shellProcessor->setLogger($job);
 
-        $workingFile = null;
-
         try {
-            // Mark as running
+            // Create unique working directory for this job
+            $workingDirectory = Filesystem::createWorkingDirectory('restore', $restore->id);
+
             $job->markRunning();
             $job->log('Starting restore operation', 'info', [
                 'target_database_server' => [
@@ -75,7 +72,7 @@ class RestoreTask
                 'storage_uri' => $snapshot->storage_uri,
                 'volume_type' => $snapshot->volume->type,
             ]);
-            $compressedFile = $workingDirectory.'/'.$snapshot->getFilename();
+            $compressedFile = $workingDirectory.'/snapshot.gz';
             $this->filesystemProvider->download($snapshot, $compressedFile);
             $job->log('Snapshot downloaded successfully', 'success', [
                 'file_size' => filesize($compressedFile),
@@ -99,12 +96,6 @@ class RestoreTask
                 $this->restoreDatabase($targetServer, $workingFile);
             }
 
-            // Clean up temporary files (compressed file already deleted by gzip -d)
-            $job->log('Cleaning up temporary files', 'info');
-            if (file_exists($workingFile)) {
-                unlink($workingFile);
-            }
-
             // Mark job as completed
             $job->markCompleted();
 
@@ -118,9 +109,10 @@ class RestoreTask
             $job->markFailed($e);
             throw $e;
         } finally {
-            // Ensure cleanup happens even on failure
-            if ($workingFile !== null && file_exists($workingFile)) {
-                unlink($workingFile);
+            // Clean up working directory and all files within
+            $job->log('Cleaning up temporary files', 'info');
+            if (isset($workingDirectory)) {
+                Filesystem::cleanupDirectory($workingDirectory);
             }
         }
     }

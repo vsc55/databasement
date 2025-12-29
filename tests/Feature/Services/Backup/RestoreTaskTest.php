@@ -44,9 +44,10 @@ beforeEach(function () {
     // Use real BackupJobFactory from container
     $this->backupJobFactory = app(BackupJobFactory::class);
 
-    // Create temp directory for test files
+    // Create temp directory for test files and set it as the backup tmp folder
     $this->tempDir = sys_get_temp_dir().'/restore-task-test-'.uniqid();
     mkdir($this->tempDir, 0777, true);
+    config(['backup.tmp_folder' => $this->tempDir]);
 });
 
 // Helper function to create a database server with backup and volume for restore tests
@@ -93,18 +94,7 @@ function setupRestoreExpectations(Restore $restore): void
 }
 
 afterEach(function () {
-    // Remove temp directory and all files within
-    if (is_dir($this->tempDir)) {
-        // Remove any remaining files in the directory
-        $files = glob($this->tempDir.'/*');
-        foreach ($files as $file) {
-            if (is_file($file)) {
-                unlink($file);
-            }
-        }
-        rmdir($this->tempDir);
-    }
-
+    \App\Support\Filesystem::cleanupDirectory($this->tempDir);
     Mockery::close();
 });
 
@@ -145,11 +135,12 @@ test('run executes mysql restore workflow successfully', function (string $cliTy
     setupRestoreExpectations($restore);
 
     // Act
-    $this->restoreTask->run($restore, $this->tempDir);
+    $this->restoreTask->run($restore);
 
-    // Build expected file paths
-    $compressedFile = $this->tempDir.'/backup.sql.gz';
-    $decompressedFile = $this->tempDir.'/backup.sql';
+    // Build expected file paths (now in unique working directory)
+    $workingDir = $this->tempDir.'/restore-'.$restore->id;
+    $compressedFile = $workingDir.'/snapshot.gz';
+    $decompressedFile = $workingDir.'/snapshot';
 
     // Expected commands
     $expectedCommands = [
@@ -204,11 +195,12 @@ test('run executes postgresql restore workflow successfully', function () {
     setupRestoreExpectations($restore);
 
     // Act
-    $this->restoreTask->run($restore, $this->tempDir);
+    $this->restoreTask->run($restore);
 
-    // Build expected file paths
-    $compressedFile = $this->tempDir.'/pg_backup.sql.gz';
-    $decompressedFile = $this->tempDir.'/pg_backup.sql';
+    // Build expected file paths (now in unique working directory)
+    $workingDir = $this->tempDir.'/restore-'.$restore->id;
+    $compressedFile = $workingDir.'/snapshot.gz';
+    $decompressedFile = $workingDir.'/snapshot';
 
     // Expected commands (PostgreSQL uses escapeshellarg on paths, adding quotes)
     $expectedCommands = [
@@ -337,7 +329,7 @@ test('run throws exception when restore command failed', function () {
     // Act & Assert
     $exception = null;
     try {
-        $restoreTask->run($restore, $this->tempDir);
+        $restoreTask->run($restore);
     } catch (\App\Exceptions\ShellProcessFailed $e) {
         $exception = $e;
     }
@@ -400,11 +392,12 @@ test('run executes sqlite restore workflow successfully', function () {
         });
 
     // Act
-    $this->restoreTask->run($restore, $this->tempDir);
+    $this->restoreTask->run($restore);
 
-    // Build expected file paths
-    $compressedFile = $this->tempDir.'/backup.db.gz';
-    $decompressedFile = $this->tempDir.'/backup.db';
+    // Build expected file paths (now in unique working directory)
+    $workingDir = $this->tempDir.'/restore-'.$restore->id;
+    $compressedFile = $workingDir.'/snapshot.gz';
+    $decompressedFile = $workingDir.'/snapshot';
 
     // Expected commands - SQLite restore is just a file copy
     $expectedCommands = [

@@ -159,10 +159,15 @@ test('sqlite backup and restore workflow', function () {
 
 function integrationCreateVolume(string $type): Volume
 {
+    $storageDir = config('backup.tmp_folder').'/storage';
+    if (! is_dir($storageDir)) {
+        mkdir($storageDir, 0755, true);
+    }
+
     return Volume::create([
         'name' => "Integration Test Volume ({$type})",
         'type' => 'local',
-        'config' => ['root' => config('backup.tmp_folder')],
+        'config' => ['root' => $storageDir],
     ]);
 }
 

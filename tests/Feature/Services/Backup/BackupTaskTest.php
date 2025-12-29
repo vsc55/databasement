@@ -95,17 +95,7 @@ function setupCommonExpectations(Snapshot $snapshot): void
 }
 
 afterEach(function () {
-    // Remove temp directory and all files within
-    if (is_dir($this->tempDir)) {
-        $files = glob($this->tempDir.'/*');
-        foreach ($files as $file) {
-            if (is_file($file)) {
-                unlink($file);
-            }
-        }
-        rmdir($this->tempDir);
-    }
-
+    \App\Support\Filesystem::cleanupDirectory($this->tempDir);
     Mockery::close();
 });
 
@@ -129,7 +119,10 @@ test('run executes mysql and mariadb backup workflow successfully', function (st
 
     setupCommonExpectations($snapshot);
     $this->backupTask->run($snapshot);
-    $sqlFile = $this->tempDir.'/'.$snapshot->id.'.sql';
+
+    // Build expected file paths (now in unique working directory)
+    $workingDir = $this->tempDir.'/backup-'.$snapshot->id;
+    $sqlFile = $workingDir.'/dump.sql';
 
     $expectedCommands = [
         "{$expectedBinary} --routines{$extraFlags} --host='localhost' --port='3306' --user='root' --password='secret' 'myapp' > '$sqlFile'",
@@ -159,7 +152,10 @@ test('run executes postgresql backup workflow successfully', function () {
 
     setupCommonExpectations($snapshot);
     $this->backupTask->run($snapshot);
-    $sqlFile = $this->tempDir.'/'.$snapshot->id.'.sql';
+
+    // Build expected file paths (now in unique working directory)
+    $workingDir = $this->tempDir.'/backup-'.$snapshot->id;
+    $sqlFile = $workingDir.'/dump.sql';
 
     $expectedCommands = [
         "PGPASSWORD='pg_secret' pg_dump --clean --host='db.example.com' --port='5432' --username='postgres' 'staging_db' -f '$sqlFile'",
@@ -376,7 +372,9 @@ test('run executes sqlite backup workflow successfully', function () {
     setupCommonExpectations($snapshot);
     $this->backupTask->run($snapshot);
 
-    $dbFile = $this->tempDir.'/'.$snapshot->id.'.db';
+    // Build expected file paths (now in unique working directory)
+    $workingDir = $this->tempDir.'/backup-'.$snapshot->id;
+    $dbFile = $workingDir.'/dump.db';
 
     $expectedCommands = [
         "cp '{$sqlitePath}' '{$dbFile}'",
