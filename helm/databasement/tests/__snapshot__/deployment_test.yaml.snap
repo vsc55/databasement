@@ -29,6 +29,8 @@ should render deployment with default values:
         spec:
           containers:
             - env:
+                - name: SERVER_NAME
+                  value: :8080
                 - name: APP_NAME
                   value: Databasement
                 - name: APP_ENV
@@ -36,7 +38,7 @@ should render deployment with default values:
                 - name: APP_DEBUG
                   value: "false"
                 - name: APP_URL
-                  value: http://localhost:2226
+                  value: http://localhost:8080
                 - name: APP_KEY
                   valueFrom:
                     secretKeyRef:
@@ -63,7 +65,7 @@ should render deployment with default values:
                 timeoutSeconds: 5
               name: databasement
               ports:
-                - containerPort: 2226
+                - containerPort: 8080
                   name: http
                   protocol: TCP
               readinessProbe:
@@ -94,6 +96,8 @@ should render deployment with default values:
                 - -c
                 - php artisan db:wait && php artisan db:wait --check-migrations && php artisan queue:work --queue=backups,default --tries=3 --timeout=3600 --sleep=3 --max-jobs=1000
               env:
+                - name: SERVER_NAME
+                  value: :8080
                 - name: APP_NAME
                   value: Databasement
                 - name: APP_ENV
@@ -101,7 +105,7 @@ should render deployment with default values:
                 - name: APP_DEBUG
                   value: "false"
                 - name: APP_URL
-                  value: http://localhost:2226
+                  value: http://localhost:8080
                 - name: APP_KEY
                   valueFrom:
                     secretKeyRef:
@@ -140,6 +144,8 @@ should render deployment with default values:
                 - -c
                 - php artisan db:wait && php artisan migrate --force
               env:
+                - name: SERVER_NAME
+                  value: :8080
                 - name: APP_NAME
                   value: Databasement
                 - name: APP_ENV
@@ -147,7 +153,7 @@ should render deployment with default values:
                 - name: APP_DEBUG
                   value: "false"
                 - name: APP_URL
-                  value: http://localhost:2226
+                  value: http://localhost:8080
                 - name: APP_KEY
                   valueFrom:
                     secretKeyRef:
@@ -211,6 +217,8 @@ should render deployment with mysql database:
         spec:
           containers:
             - env:
+                - name: SERVER_NAME
+                  value: :8080
                 - name: APP_NAME
                   value: Databasement
                 - name: APP_ENV
@@ -218,7 +226,7 @@ should render deployment with mysql database:
                 - name: APP_DEBUG
                   value: "false"
                 - name: APP_URL
-                  value: http://localhost:2226
+                  value: http://localhost:8080
                 - name: APP_KEY
                   valueFrom:
                     secretKeyRef:
@@ -256,7 +264,7 @@ should render deployment with mysql database:
                 timeoutSeconds: 5
               name: databasement
               ports:
-                - containerPort: 2226
+                - containerPort: 8080
                   name: http
                   protocol: TCP
               readinessProbe:
@@ -287,6 +295,8 @@ should render deployment with mysql database:
                 - -c
                 - php artisan db:wait && php artisan db:wait --check-migrations && php artisan queue:work --queue=backups,default --tries=3 --timeout=3600 --sleep=3 --max-jobs=1000
               env:
+                - name: SERVER_NAME
+                  value: :8080
                 - name: APP_NAME
                   value: Databasement
                 - name: APP_ENV
@@ -294,7 +304,7 @@ should render deployment with mysql database:
                 - name: APP_DEBUG
                   value: "false"
                 - name: APP_URL
-                  value: http://localhost:2226
+                  value: http://localhost:8080
                 - name: APP_KEY
                   valueFrom:
                     secretKeyRef:
@@ -344,6 +354,8 @@ should render deployment with mysql database:
                 - -c
                 - php artisan db:wait && php artisan migrate --force
               env:
+                - name: SERVER_NAME
+                  value: :8080
                 - name: APP_NAME
                   value: Databasement
                 - name: APP_ENV
@@ -351,7 +363,7 @@ should render deployment with mysql database:
                 - name: APP_DEBUG
                   value: "false"
                 - name: APP_URL
-                  value: http://localhost:2226
+                  value: http://localhost:8080
                 - name: APP_KEY
                   valueFrom:
                     secretKeyRef:

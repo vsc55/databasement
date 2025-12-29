@@ -74,6 +74,8 @@ Create the name of the service account to use
 Common environment variables for app and worker containers
 */}}
 {{- define "databasement.env" -}}
+- name: SERVER_NAME
+  value: ":{{ .Values.port }}"
 - name: APP_NAME
   value: {{ .Values.app.name | quote }}
 - name: APP_ENV
