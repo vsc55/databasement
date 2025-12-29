@@ -1,6 +1,6 @@
 services:
   app:
-    # image: davidcrty/databasement-php
+    image: davidcrty/databasement-php
     build:
       context: docker/php
     user: 1000:1000
@@ -19,7 +19,7 @@ services:
       - localstack
 
   worker:
-    # image: davidcrty/databasement-php
+    image: davidcrty/databasement-php
     build:
       context: docker/php
     user: 1000:1000
