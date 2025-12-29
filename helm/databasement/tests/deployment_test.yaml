@@ -85,7 +85,7 @@ tests:
           value: databasement-worker
       - equal:
           path: spec.template.spec.containers[1].command
-          value: ["sh", "-c", "php artisan db:wait && php artisan queue:work --queue=custom --tries=5"]
+          value: ["sh", "-c", "php artisan queue:work --queue=custom --tries=5"]
 
   - it: should apply worker resources in sidecar mode
     set:
