@@ -148,11 +148,20 @@
     </x-drawer>
 
     <!-- DELETE CONFIRMATION MODAL -->
-    <x-delete-confirmation-modal
-        :title="__('Delete Database Server')"
-        :message="__('Are you sure you want to delete this database server? This action cannot be undone.')"
-        onConfirm="delete"
-    />
+    <x-modal wire:model="showDeleteModal" :title="__('Delete Database Server')" class="backdrop-blur">
+        <p>{{ __('Are you sure you want to delete this database server? This action cannot be undone.') }}</p>
+
+        @if($deleteSnapshotCount > 0)
+            <x-alert icon="o-exclamation-triangle" class="alert-warning mt-4">
+                {{ trans_choice(':count snapshot will also be deleted.|:count snapshots will also be deleted.', $deleteSnapshotCount, ['count' => $deleteSnapshotCount]) }}
+            </x-alert>
+        @endif
+
+        <x-slot:actions>
+            <x-button label="{{ __('Cancel') }}" @click="$wire.showDeleteModal = false" />
+            <x-button label="{{ __('Delete') }}" class="btn-error" wire:click="delete" />
+        </x-slot:actions>
+    </x-modal>
 
     <!-- RESTORE MODAL -->
     <livewire:database-server.restore-modal />

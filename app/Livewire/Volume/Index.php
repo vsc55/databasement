@@ -29,6 +29,8 @@ class Index extends Component
 
     public bool $showDeleteModal = false;
 
+    public int $deleteSnapshotCount = 0;
+
     public function updatingSearch(): void
     {
         $this->resetPage();
@@ -71,6 +73,7 @@ class Index extends Component
         $this->authorize('delete', $volume);
 
         $this->deleteId = $id;
+        $this->deleteSnapshotCount = $volume->snapshots()->count();
         $this->showDeleteModal = true;
     }
 
