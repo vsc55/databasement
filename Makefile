@@ -1,4 +1,4 @@
-.PHONY: help install start test test-mysql test-postgres test-filter test-filter-mysql test-filter-postgres test-coverage backup-test lint-check lint-fix lint migrate migrate-fresh db-seed setup clean import-db docs-build
+.PHONY: help install start test test-mysql test-postgres test-filter test-filter-mysql test-filter-postgres test-coverage backup-test lint-check lint-fix lint migrate migrate-fresh db-seed setup clean import-db docs docs-build
 
 # Colors for output
 GREEN  := \033[0;32m
@@ -93,8 +93,11 @@ dev-assets: ## Start Vite dev server only
 
 ##@ Documentation
 
-docs-build: ## Build documentation (Docusaurus)
-	cd docs && $(NPM_EXEC) run build
+docs: ## Start documentation dev server (Docusaurus)
+	cd docs && $(NPM_EXEC) install && $(NPM_EXEC) run start
+
+docs-build: ## Build documentation for production (Docusaurus)
+	cd docs && $(NPM_EXEC) install && $(NPM_EXEC) run build
 
 ##@ Database
 

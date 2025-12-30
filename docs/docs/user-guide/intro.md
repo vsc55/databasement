@@ -67,3 +67,4 @@ To restore a backup, go to **Snapshots**, find the snapshot you want to restore,
 - [Configuring Backups](/user-guide/backups)
 - [Working with Snapshots](/user-guide/snapshots)
 - [Storage Volumes](/user-guide/volumes)
+- [Permissions](/user-guide/permissions)
