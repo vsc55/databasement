@@ -152,82 +152,6 @@ test('demo user can trigger restore', function () {
     expect($this->demoUser->can('restore', $server))->toBeTrue();
 });
 
-test('visiting home page auto-logs in as demo user and redirects to dashboard', function () {
-    // Delete the demo user created in beforeEach so we start fresh
-    User::query()->delete();
-
-    // Create an existing user so we don't get redirected to register
-    User::factory()->create(['role' => User::ROLE_ADMIN]);
-
-    config(['app.demo_user_email' => 'test-demo@example.com']);
-
-    // Visit home page - should auto-login as demo user and redirect to dashboard
-    $response = $this->get('/');
-    $response->assertRedirect(route('dashboard'));
-
-    // Demo user should have been created and logged in
-    $this->assertAuthenticated();
-    $this->assertDatabaseHas('users', [
-        'email' => 'test-demo@example.com',
-        'role' => User::ROLE_DEMO,
-    ]);
-
-    // Following the redirect should show the dashboard
-    $this->get(route('dashboard'))->assertOk();
-
-    // Verify we're logged in as the demo user
-    expect(auth()->user()->email)->toBe('test-demo@example.com')
-        ->and(auth()->user()->isDemo())->toBeTrue();
-});
-
-test('demo mode middleware does not interfere when disabled', function () {
-    // Disable demo mode (overrides beforeEach)
-    config(['app.demo_mode' => false]);
-
-    // Logout any user (beforeEach creates a demo user)
-    auth()->logout();
-
-    $response = $this->get(route('dashboard'));
-
-    // Should redirect to login since demo mode is disabled and no user logged in
-    $response->assertRedirect(route('login'));
-});
-
-test('real user can login and stays logged in after navigating when demo mode is enabled', function () {
-    config(['app.demo_user_email' => 'demo@example.com']);
-
-    // Create a real user
-    $realUser = User::factory()->create([
-        'email' => 'realuser@example.com',
-        'password' => bcrypt('password123'),
-        'role' => User::ROLE_ADMIN,
-        'two_factor_secret' => null,
-        'two_factor_confirmed_at' => null,
-    ]);
-
-    // Login as the real user
-    $this->post(route('login.store'), [
-        'email' => 'realuser@example.com',
-        'password' => 'password123',
-    ]);
-
-    // Now navigate to dashboard - should still be the real user
-    $response = $this->get(route('dashboard'));
-    $response->assertOk();
-
-    // Should still be logged in as the real user, NOT replaced by demo user
-    expect(auth()->user()->email)->toBe('realuser@example.com')
-        ->and(auth()->user()->isDemo())->toBeFalse();
-
-    // Navigate to another page
-    $response = $this->get(route('database-servers.index'));
-    $response->assertOk();
-
-    // Should still be the real user
-    expect(auth()->user()->email)->toBe('realuser@example.com')
-        ->and(auth()->user()->isDemo())->toBeFalse();
-});
-
 // Settings restrictions for demo users
 test('demo user cannot access profile settings', function () {
     $this->actingAs($this->demoUser)
@@ -242,12 +166,9 @@ test('demo user cannot access password settings', function () {
 });
 
 test('demo user cannot access two-factor settings', function () {
-    // Two-factor route may have password.confirm middleware
-    // Demo users should not be able to access it (either 403 or redirect to confirm)
     $response = $this->actingAs($this->demoUser)
         ->get(route('two-factor.show'));
 
-    // Should either be forbidden or redirected (not OK)
     $response->assertForbidden();
 });
 
@@ -268,14 +189,9 @@ test('first admin can register even when demo mode is enabled', function () {
     // Delete all users to simulate fresh install
     User::query()->delete();
 
-    // Access home page with no users - should redirect to register, not create demo user
+    // Access home page with no users - should redirect to register
     $response = $this->get(route('home'));
     $response->assertRedirect(route('register'));
-
-    // No demo user should have been created yet
-    $this->assertDatabaseMissing('users', [
-        'email' => 'demo@example.com',
-    ]);
 
     // Should still be a guest
     $this->assertGuest();
@@ -303,4 +219,30 @@ test('first admin can register even when demo mode is enabled', function () {
 
     // Should be able to access dashboard
     $this->get(route('dashboard'))->assertOk();
+});
+// Demo user creation
+test('demo user is created when visiting login page in demo mode', function () {
+    // Delete all users
+    User::query()->delete();
+
+    // Create an admin so registration is closed
+    User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+    config([
+        'app.demo_mode' => true,
+        'app.demo_user_email' => 'auto-demo@example.com',
+        'app.demo_user_password' => 'demopass',
+    ]);
+
+    // Demo user should not exist yet
+    $this->assertDatabaseMissing('users', ['email' => 'auto-demo@example.com']);
+
+    // Visit login page
+    $this->get(route('login'))->assertOk();
+
+    // Demo user should now exist
+    $this->assertDatabaseHas('users', [
+        'email' => 'auto-demo@example.com',
+        'role' => User::ROLE_DEMO,
+    ]);
 });
