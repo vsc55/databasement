@@ -51,6 +51,11 @@ const config: Config = {
             title: 'Databasement',
             items: [
                 {
+                    href: 'https://databasement-demo.crty.dev/',
+                    label: 'Demo',
+                    position: 'left',
+                },
+                {
                     type: 'doc',
                     docId: 'self-hosting/intro',
                     position: 'left',

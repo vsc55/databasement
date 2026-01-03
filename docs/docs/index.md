@@ -3,9 +3,13 @@ sidebar_position: 0
 slug: /
 ---
 
+![Databasement Banner](../static/img/banner-v1.png)
+
 # Databasement Documentation
 
 Welcome to the **Databasement** documentation!
+
+> **Try it out!** Explore the [live demo](https://databasement-demo.crty.dev/) to see Databasement in action.
 
 Databasement is a web application for managing database server backups. It allows you to register database servers (MySQL, PostgreSQL, MariaDB), test connections, schedule automated backups, and restore snapshots to any registered server.
 

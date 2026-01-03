@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/David-Crty/databasement">
-    <img src="docs/static/img/banner.png" alt="Databasement Banner" />
+    <img src="docs/static/img/banner-v1.png" alt="Databasement Banner" />
   </a>
 </p>
 
@@ -24,12 +24,15 @@
 </p>
 
 <p align="center">
+  <a href="https://databasement-demo.crty.dev/"><strong>Live Demo</strong></a> ·
   <a href="https://david-crty.github.io/databasement/">Documentation</a> ·
   <a href="https://github.com/David-Crty/databasement/issues">Report Bug</a> ·
   <a href="https://github.com/David-Crty/databasement/discussions">Request Feature</a>
 </p>
 
 ---
+
+> **Try it out!** Explore the [live demo](https://databasement-demo.crty.dev/) to see Databasement in action before installing.
 
 ## Features
 
@@ -50,6 +53,7 @@ Databasement is designed to be self-hosted. We provide several deployment option
 | **Docker** | Single container deployment | [View Guide](https://david-crty.github.io/databasement/self-hosting/docker) |
 | **Docker Compose** | Multi-container setup with external database | [View Guide](https://david-crty.github.io/databasement/self-hosting/docker-compose) |
 | **Kubernetes + Helm** | For Kubernetes clusters | [View Guide](https://david-crty.github.io/databasement/self-hosting/kubernetes-helm) |
+| **Native Ubuntu** | Traditional installation without Docker | [View Guide](https://david-crty.github.io/databasement/self-hosting/native-ubuntu) |
 
 ### Quick Start
 
