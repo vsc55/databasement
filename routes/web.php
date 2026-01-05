@@ -25,13 +25,12 @@ Route::get('/', function () {
 Route::get('/invitation/{token}', \App\Livewire\Auth\AcceptInvitation::class)
     ->name('invitation.accept');
 
-// Dashboard
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth'])
-    ->name('dashboard');
-
 // Main resources - all authenticated users can view index pages
 Route::middleware(['auth'])->group(function () {
+    // Dashboard
+    Route::get('dashboard', \App\Livewire\Dashboard::class)
+        ->name('dashboard');
+
     // Index pages - viewable by all roles
     Route::get('database-servers', \App\Livewire\DatabaseServer\Index::class)
         ->name('database-servers.index');

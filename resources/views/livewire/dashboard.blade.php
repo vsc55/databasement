@@ -1,4 +1,4 @@
-<x-layouts.app :title="__('Dashboard')">
+<div>
     <x-header title="{{ __('Dashboard') }}" separator />
 
     <div class="flex flex-col gap-6">
@@ -19,4 +19,4 @@
             </div>
         </div>
     </div>
-</x-layouts.app>
+</div>
