@@ -70,6 +70,7 @@ DB_PASSWORD=your-secure-password
 # AWS_USE_PATH_STYLE_ENDPOINT=false
 ```
 
+
 ### 4. Create docker-compose.yml
 
 #### SQLite (Simple Setup)
@@ -163,7 +164,7 @@ volumes:
 ```
 
 :::tip
-Remembers to restart the `worker` service whenever you make changes to the `.env` file. `docker compose restart app worker`
+Remember to restart both the `app` and `worker` services whenever you change the `.env` file: `docker compose restart app worker`
 :::
 
 :::tip
