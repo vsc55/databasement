@@ -23,11 +23,12 @@ RUN install-php-extensions \
 
 COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 
-# Add DB CLI tools used by the app: mysqldump, mysql, pg_dump, psql
+# Add DB CLI tools and compression utilities
 RUN apk add --no-cache git \
         mariadb-client mariadb-connector-c \
         postgresql-client \
-        supervisor
+        supervisor \
+        gzip zstd
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY php-custom-production.ini /usr/local/etc/php/php-custom-production.ini
