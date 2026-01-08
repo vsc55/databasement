@@ -6,6 +6,7 @@ use App\Models\Snapshot;
 use App\Models\Volume;
 use App\Services\Backup\BackupJobFactory;
 use App\Services\Backup\BackupTask;
+use App\Services\Backup\CompressorInterface;
 use App\Services\Backup\DatabaseListService;
 use App\Services\Backup\Databases\MysqlDatabase;
 use App\Services\Backup\Databases\PostgresqlDatabase;
@@ -22,7 +23,8 @@ beforeEach(function () {
     $this->mysqlDatabase = new MysqlDatabase;  // ✓ Real command building
     $this->postgresqlDatabase = new PostgresqlDatabase;  // ✓ Real command building
     $this->shellProcessor = new TestShellProcessor;  // ✓ Captures commands without executing
-    $this->compressor = new GzipCompressor($this->shellProcessor);  // ✓ Real path manipulation
+    /** @var CompressorInterface $compressor */
+    $this->compressor = new GzipCompressor($this->shellProcessor, 6);  // ✓ Real path manipulation
 
     // Mock external dependencies only
     $this->filesystemProvider = Mockery::mock(FilesystemProvider::class);
@@ -125,7 +127,7 @@ test('run executes mysql and mariadb backup workflow successfully', function (st
 
     $expectedCommands = [
         "{$expectedBinary} --single-transaction --routines --add-drop-table --complete-insert --hex-blob --quote-names {$extraFlags}--host='localhost' --port='3306' --user='root' --password='secret' 'myapp' > '$sqlFile'",
-        "gzip '$sqlFile'",
+        "gzip -6 '$sqlFile'",
     ];
     $commands = $this->shellProcessor->getCommands();
     expect($commands)->toEqual($expectedCommands);
@@ -158,7 +160,7 @@ test('run executes postgresql backup workflow successfully', function () {
 
     $expectedCommands = [
         "PGPASSWORD='pg_secret' pg_dump --clean --if-exists --no-owner --no-privileges --quote-all-identifiers --host='db.example.com' --port='5432' --username='postgres' 'staging_db' -f '$sqlFile'",
-        "gzip '$sqlFile'",
+        "gzip -6 '$sqlFile'",
     ];
     $commands = $this->shellProcessor->getCommands();
     expect($commands)->toEqual($expectedCommands);
@@ -377,7 +379,7 @@ test('run executes sqlite backup workflow successfully', function () {
 
     $expectedCommands = [
         "cp '{$sqlitePath}' '{$dbFile}'",
-        "gzip '{$dbFile}'",
+        "gzip -6 '{$dbFile}'",
     ];
     $commands = $this->shellProcessor->getCommands();
     expect($commands)->toEqual($expectedCommands);

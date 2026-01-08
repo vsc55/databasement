@@ -48,7 +48,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y mysql-client postgresql-client
+          sudo apt-get install -y mysql-client postgresql-client zstd
 
       - name: Setup Node
         uses: actions/setup-node@v4

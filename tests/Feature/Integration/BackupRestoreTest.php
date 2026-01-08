@@ -48,7 +48,15 @@ afterEach(function () {
     $this->volume?->delete();
 });
 
-test('client-server database backup and restore workflow', function (string $type) {
+test('client-server database backup and restore workflow', function (string $type, string $compression, string $expectedExt) {
+    // Set compression method
+    config(['backup.compression' => $compression]);
+
+    // Clear singleton bindings and recreate BackupTask with new compression config
+    app()->forgetInstance(\App\Services\Backup\CompressorInterface::class);
+    app()->forgetInstance(\App\Services\Backup\BackupTask::class);
+    $this->backupTask = app(BackupTask::class);
+
     // Create models
     $this->volume = IntegrationTestHelpers::createVolume($type);
     $this->databaseServer = IntegrationTestHelpers::createDatabaseServer($type);
@@ -72,6 +80,7 @@ test('client-server database backup and restore workflow', function (string $typ
 
     expect($this->snapshot->job->status)->toBe('completed')
         ->and($this->snapshot->file_size)->toBeGreaterThan(0)
+        ->and($this->snapshot->filename)->toEndWith(".sql.{$expectedExt}")
         ->and($filesystem->fileExists($this->snapshot->filename))->toBeTrue();
 
     // Run restore
@@ -93,7 +102,12 @@ test('client-server database backup and restore workflow', function (string $typ
     };
     $stmt = $pdo->query($verifyQuery);
     expect($stmt)->not->toBeFalse();
-})->with(['mysql', 'postgres']);
+})->with([
+    'mysql with gzip' => ['mysql', 'gzip', 'gz'],
+    'mysql with zstd' => ['mysql', 'zstd', 'zst'],
+    'postgres with gzip' => ['postgres', 'gzip', 'gz'],
+    'postgres with zstd' => ['postgres', 'zstd', 'zst'],
+]);
 
 test('sqlite backup and restore workflow', function () {
     // Create a test SQLite database with some data

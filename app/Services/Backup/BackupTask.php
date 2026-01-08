@@ -18,7 +18,7 @@ class BackupTask
         private readonly PostgresqlDatabase $postgresqlDatabase,
         private readonly ShellProcessor $shellProcessor,
         private readonly FilesystemProvider $filesystemProvider,
-        private readonly GzipCompressor $compressor
+        private readonly CompressorInterface $compressor
     ) {}
 
     public function setLogger(BackupJob $job): void
@@ -146,9 +146,10 @@ class BackupTask
         $timestamp = now()->format('Y-m-d-His');
         $serverName = preg_replace('/[^a-zA-Z0-9-_]/', '-', $databaseServer->name);
         $sanitizedDbName = preg_replace('/[^a-zA-Z0-9-_]/', '-', $databaseName);
-        $extension = $databaseServer->database_type === 'sqlite' ? 'db.gz' : 'sql.gz';
+        $baseExtension = $databaseServer->database_type === 'sqlite' ? 'db' : 'sql';
+        $compressionExtension = $this->compressor->getExtension();
 
-        return sprintf('%s-%s-%s.%s', $serverName, $sanitizedDbName, $timestamp, $extension);
+        return sprintf('%s-%s-%s.%s.%s', $serverName, $sanitizedDbName, $timestamp, $baseExtension, $compressionExtension);
     }
 
     private function configureDatabaseInterface(DatabaseServer $databaseServer, string $databaseName): void

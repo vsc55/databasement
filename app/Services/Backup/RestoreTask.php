@@ -26,7 +26,7 @@ class RestoreTask
         private readonly PostgresqlDatabase $postgresqlDatabase,
         private readonly ShellProcessor $shellProcessor,
         private readonly FilesystemProvider $filesystemProvider,
-        private readonly GzipCompressor $compressor,
+        private readonly CompressorFactory $compressorFactory,
         private readonly ConnectionFactory $connectionFactory
     ) {}
 
@@ -69,7 +69,9 @@ class RestoreTask
             ]);
 
             $humanFileSize = Formatters::humanFileSize($snapshot->file_size);
-            $compressedFile = $workingDirectory.'/snapshot.gz';
+            $compressionMethod = $this->detectCompressionMethod($snapshot->filename);
+            $compressor = $this->compressorFactory->make($compressionMethod);
+            $compressedFile = $workingDirectory.'/snapshot.'.$compressor->getExtension();
             // Download snapshot from volume
             $job->log("Downloading snapshot ({$humanFileSize}) from volume: {$snapshot->volume->name}", 'info', [
                 'volume_type' => $snapshot->volume->type,
@@ -80,7 +82,7 @@ class RestoreTask
             $this->filesystemProvider->download($snapshot, $compressedFile);
             $transferDuration = Formatters::humanDuration((int) round((microtime(true) - $transferStart) * 1000));
             $job->log('Downloaded completed successfully in '.$transferDuration, 'success');
-            $workingFile = $this->compressor->decompress($compressedFile);
+            $workingFile = $compressor->decompress($compressedFile);
 
             if ($targetServer->database_type === 'sqlite') {
                 // SQLite: simply copy the file to the target path
@@ -223,6 +225,22 @@ class RestoreTask
             DatabaseType::MYSQL => $this->mysqlDatabase->setConfig($config),
             DatabaseType::POSTGRESQL => $this->postgresqlDatabase->setConfig($config),
             default => throw new UnsupportedDatabaseTypeException($targetServer->database_type),
+        };
+    }
+
+    /**
+     * Detect compression method from snapshot filename extension.
+     *
+     * @throws \InvalidArgumentException If the compression format is not supported
+     */
+    private function detectCompressionMethod(string $filename): string
+    {
+        return match (true) {
+            str_ends_with($filename, '.zst') => 'zstd',
+            str_ends_with($filename, '.gz') => 'gzip',
+            default => throw new \InvalidArgumentException(
+                "Unsupported compression format for file: {$filename}. Supported formats: .gz (gzip), .zst (zstd)"
+            ),
         };
     }
 }

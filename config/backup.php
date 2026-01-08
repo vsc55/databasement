@@ -16,6 +16,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Compression Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure the compression algorithm and level for backups.
+    | Supported methods: 'gzip' (default), 'zstd'
+    |
+    | Compression levels: 1-9 for gzip, 1-19 for zstd (default: 6)
+    |
+    */
+
+    'compression' => env('BACKUP_COMPRESSION', 'gzip'),
+    'compression_level' => (int) env('BACKUP_COMPRESSION_LEVEL', 6),
+
+    /*
+    |--------------------------------------------------------------------------
     | MySQL CLI Type
     |--------------------------------------------------------------------------
     |
