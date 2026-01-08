@@ -2,12 +2,13 @@
 
 namespace App\Providers;
 
+use App\Services\Backup\CompressorFactory;
+use App\Services\Backup\CompressorInterface;
 use App\Services\Backup\Databases\MysqlDatabase;
 use App\Services\Backup\Databases\PostgresqlDatabase;
 use App\Services\Backup\Filesystems\Awss3Filesystem;
 use App\Services\Backup\Filesystems\FilesystemProvider;
 use App\Services\Backup\Filesystems\LocalFilesystem;
-use App\Services\Backup\GzipCompressor;
 use App\Services\Backup\ShellProcessor;
 use App\Services\DatabaseConnectionTester;
 use Dedoc\Scramble\Scramble;
@@ -31,7 +32,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Register backup service components
         $this->app->singleton(ShellProcessor::class);
-        $this->app->singleton(GzipCompressor::class);
+        $this->app->singleton(CompressorFactory::class);
+        $this->app->singleton(CompressorInterface::class, function ($app) {
+            return $app->make(CompressorFactory::class)->make();
+        });
         $this->app->singleton(MysqlDatabase::class);
         $this->app->singleton(PostgresqlDatabase::class);
 

@@ -37,6 +37,16 @@ class Index extends Component
                 'env' => 'BACKUP_WORKING_DIRECTORY',
                 'description' => __('Temporary directory for backup and restore operations.'),
             ],
+            'compression' => [
+                'value' => config('backup.compression'),
+                'env' => 'BACKUP_COMPRESSION',
+                'description' => __('Compression algorithm: "gzip" or "zstd".'),
+            ],
+            'compression_level' => [
+                'value' => config('backup.compression_level'),
+                'env' => 'BACKUP_COMPRESSION_LEVEL',
+                'description' => __('Compression level: 1-9 for gzip, 1-19 for zstd (default: 6).'),
+            ],
             'mysql_cli_type' => [
                 'value' => config('backup.mysql_cli_type'),
                 'env' => 'MYSQL_CLI_TYPE',

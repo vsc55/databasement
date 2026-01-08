@@ -37,8 +37,8 @@ class TestShellProcessor extends ShellProcessor
         }
 
         // For gzip compression: extract input path and create .gz file
-        // Matches: gzip '/path/to/file'
-        if (preg_match('/^gzip\s+[\'"]?([^\'"]+)[\'"]?$/', $command, $matches)) {
+        // Matches: gzip -6 '/path/to/file' or gzip '/path/to/file'
+        if (preg_match('/^gzip\s+(?:-\d+\s+)?[\'"]?([^\'"]+)[\'"]?$/', $command, $matches)) {
             $inputPath = $matches[1];
             $gzPath = $inputPath.'.gz';
             if (! file_exists($gzPath)) {
@@ -51,6 +51,24 @@ class TestShellProcessor extends ShellProcessor
         if (preg_match('/^gzip\s+-d\s+[\'"]?([^\'"]+)[\'"]?$/', $command, $matches)) {
             $gzPath = $matches[1];
             $decompressedPath = preg_replace('/\.gz$/', '', $gzPath);
+            file_put_contents($decompressedPath, "-- Fake decompressed data\nCREATE TABLE test (id INT);\n");
+        }
+
+        // For zstd compression: extract input path and create .zst file
+        // Matches: zstd -3 --rm '/path/to/file'
+        if (preg_match('/^zstd\s+-\d+\s+--rm\s+[\'"]?([^\'"]+)[\'"]?$/', $command, $matches)) {
+            $inputPath = $matches[1];
+            $zstPath = $inputPath.'.zst';
+            if (! file_exists($zstPath)) {
+                file_put_contents($zstPath, 'fake compressed data');
+            }
+        }
+
+        // For zstd decompression: extract .zst path and create decompressed file
+        // Matches: zstd -d --rm '/path/to/file.zst'
+        if (preg_match('/^zstd\s+-d\s+--rm\s+[\'"]?([^\'"]+)[\'"]?$/', $command, $matches)) {
+            $zstPath = $matches[1];
+            $decompressedPath = preg_replace('/\.zst$/', '', $zstPath);
             file_put_contents($decompressedPath, "-- Fake decompressed data\nCREATE TABLE test (id INT);\n");
         }
     }

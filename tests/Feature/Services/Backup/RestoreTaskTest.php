@@ -5,10 +5,10 @@ use App\Models\DatabaseServer;
 use App\Models\Restore;
 use App\Models\Volume;
 use App\Services\Backup\BackupJobFactory;
+use App\Services\Backup\CompressorFactory;
 use App\Services\Backup\Databases\MysqlDatabase;
 use App\Services\Backup\Databases\PostgresqlDatabase;
 use App\Services\Backup\Filesystems\FilesystemProvider;
-use App\Services\Backup\GzipCompressor;
 use App\Services\Backup\RestoreTask;
 use App\Services\ConnectionFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,7 +21,7 @@ beforeEach(function () {
     $this->mysqlDatabase = new MysqlDatabase;  // ✓ Real command building
     $this->postgresqlDatabase = new PostgresqlDatabase;  // ✓ Real command building
     $this->shellProcessor = new TestShellProcessor;  // ✓ Captures commands without executing
-    $this->compressor = new GzipCompressor($this->shellProcessor);  // ✓ Real path manipulation
+    $this->compressorFactory = new CompressorFactory($this->shellProcessor);  // ✓ Real path manipulation
 
     // Mock external dependencies only
     $this->filesystemProvider = Mockery::mock(FilesystemProvider::class);
@@ -35,7 +35,7 @@ beforeEach(function () {
             $this->postgresqlDatabase,
             $this->shellProcessor,
             $this->filesystemProvider,
-            $this->compressor,
+            $this->compressorFactory,
             $this->connectionFactory,
         ]
     )->makePartial()
@@ -286,7 +286,8 @@ test('run throws exception when restore command failed', function () {
         ->andThrow(new \App\Exceptions\ShellProcessFailed('Access denied for user'));
 
     // Mock compressor to skip decompression and simulate decompressed file
-    $compressor = Mockery::mock(\App\Services\Backup\GzipCompressor::class);
+    $compressor = Mockery::mock(\App\Services\Backup\CompressorInterface::class);
+    $compressor->shouldReceive('getExtension')->andReturn('gz');
     $compressor->shouldReceive('decompress')
         ->once()
         ->andReturnUsing(function ($compressedFile) {
@@ -296,7 +297,11 @@ test('run throws exception when restore command failed', function () {
             return $decompressedFile;
         });
 
-    // Recreate RestoreTask with mocked shell processor and compressor
+    // Mock compressor factory to return our mocked compressor
+    $compressorFactory = Mockery::mock(\App\Services\Backup\CompressorFactory::class);
+    $compressorFactory->shouldReceive('make')->andReturn($compressor);
+
+    // Recreate RestoreTask with mocked shell processor and compressor factory
     $restoreTask = Mockery::mock(
         \App\Services\Backup\RestoreTask::class,
         [
@@ -304,7 +309,7 @@ test('run throws exception when restore command failed', function () {
             $this->postgresqlDatabase,
             $shellProcessor,
             $this->filesystemProvider,
-            $compressor,
+            $compressorFactory,
             $this->connectionFactory,
         ]
     )->makePartial()
