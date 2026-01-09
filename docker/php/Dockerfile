@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:1.9-php8.4-alpine
+FROM dunglas/frankenphp:1.11-php8.4-alpine
 
 RUN install-php-extensions \
     ctype \
@@ -26,7 +26,7 @@ COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 # Add tools
 RUN apk add --no-cache git \
         mariadb-client mariadb-connector-c \
-        postgresql-client \
+        postgresql18-client \
         supervisor \
         gzip zstd \
         tzdata
