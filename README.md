@@ -26,8 +26,7 @@
 <p align="center">
   <a href="https://databasement-demo.crty.dev/"><strong>Live Demo</strong></a> ·
   <a href="https://david-crty.github.io/databasement/">Documentation</a> ·
-  <a href="https://github.com/David-Crty/databasement/issues">Report Bug</a> ·
-  <a href="https://github.com/David-Crty/databasement/discussions">Request Feature</a>
+  <a href="https://github.com/David-Crty/databasement/issues">Report Bug or Request Feature</a> ·
 </p>
 
 ---
@@ -54,6 +53,7 @@ Databasement is designed to be self-hosted. We provide several deployment option
 | **Docker Compose** | Multi-container setup with external database | [View Guide](https://david-crty.github.io/databasement/self-hosting/docker-compose) |
 | **Kubernetes + Helm** | For Kubernetes clusters | [View Guide](https://david-crty.github.io/databasement/self-hosting/kubernetes-helm) |
 | **Native Ubuntu** | Traditional installation without Docker | [View Guide](https://david-crty.github.io/databasement/self-hosting/native-ubuntu) |
+| **NAS Platforms** | Synology, Unraid, TrueNAS, QNAP, Proxmox | [View Guide](https://david-crty.github.io/databasement/self-hosting/nas-platforms) |
 
 ### Quick Start
 
