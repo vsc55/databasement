@@ -61,12 +61,13 @@ return [
     |
     | When running behind a reverse proxy (nginx, Traefik, Kubernetes Ingress),
     | configure trusted proxies so Laravel can correctly determine the client
-    | IP address and protocol. Use '*' to trust all proxies (recommended for
-    | containerized environments), or specify IPs/CIDR ranges.
+    | IP address and protocol.
+    |
+    | Use '*' to trust all proxies, or specify IPs/CIDR
     |
     */
 
-    'trusted_proxies' => env('TRUSTED_PROXIES'),
+    'trusted_proxies' => env('TRUSTED_PROXIES', '127.0.0.0/8,10.0.0.0/8,100.64.0.0/10,169.254.0.0/16,172.16.0.0/12,192.168.0.0/16'),
 
     /*
     |--------------------------------------------------------------------------

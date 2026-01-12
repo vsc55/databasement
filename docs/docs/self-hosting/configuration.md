@@ -94,28 +94,22 @@ DB_PASSWORD=your-secure-password
 
 ## Reverse Proxy / Trusted Proxies
 
-When running behind a reverse proxy (nginx, Traefik, Kubernetes Ingress), configure trusted proxies so Laravel can correctly determine the client IP and protocol.
+When running behind a reverse proxy (nginx, Traefik, Kubernetes Ingress), configure trusted proxies so Laravel can
+correctly determine the client IP and protocol. See the [Troubleshooting section](#troubleshooting) if you have issues
+with proxy configuration.
 
-| Variable          | Description                                    | Default                                                   |
-|-------------------|------------------------------------------------|-----------------------------------------------------------|
-| `TRUSTED_PROXIES` | IP addresses or CIDR ranges of trusted proxies | `127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,::1` |
+| Variable          | Description                                    | Default                                                                            |
+|-------------------|------------------------------------------------|------------------------------------------------------------------------------------|
+| `TRUSTED_PROXIES` | IP addresses or CIDR ranges of trusted proxies | `127.0.0.0/8,10.0.0.0/8,100.64.0.0/10,169.254.0.0/16,172.16.0.0/12,192.168.0.0/16` |
 
-**Values:**
-- `127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,::1')` - This covers all RFC 1918 private ranges
-- `*` - Trust all proxies (suitable for Kubernetes/Docker where proxy IPs are dynamic)
-- Comma-separated IPs: `10.0.0.1,192.168.1.0/24` - Trust specific proxies
+**Alternative values:**
+- `*` - Trust all proxies (simplest option for containerized environments)
+- Comma-separated IPs/CIDRs: `10.0.0.1,192.168.1.0/24` - Trust specific proxies only
 - Empty - Trust no proxies
 
-```bash
-# Trust all proxies (default, recommended for containerized environments)
-TRUSTED_PROXIES=*
-
-# Trust specific proxy IPs
-TRUSTED_PROXIES=10.0.0.1,10.0.0.2
-
-# Trust a CIDR range
-TRUSTED_PROXIES=10.0.0.0/8
-```
+:::info
+Checks the [Troubleshooting section](#troubleshooting) for help with proxy configuration.
+:::
 
 ## Backup Configuration
 
@@ -279,11 +273,33 @@ LOG_LEVEL=warning
 ## Troubleshooting
 
 ### Enable Debug Mode
-- Enable debug mode with `APP_DEBUG=true` in your values file.
-    - Go to `https://dabasement.yourdomain.com/health/debug` to view the debug page.
 
-- Check the logs
-- Report any issues on [GitHub](https://github.com/david-crty/databasement/issues)
+Enable debug mode to access detailed diagnostics:
+
+```bash
+APP_DEBUG=true
+```
+
+Then visit `https://your-domain.com/health/debug` to view:
+- Current IP address and whether it's from a trusted proxy
+- Request headers (including `X-Forwarded-For`, `X-Forwarded-Proto`)
+- Application configuration
+
+### Debugging Trusted Proxies
+
+If your application shows HTTP instead of HTTPS, or shows the wrong client IP:
+
+1. **Enable debug mode** (see above)
+2. **Visit `/health/debug`** and check:
+   - `is_trusted_proxy`: Should be `true`
+   - `secure`: Should be `true` for HTTPS
+   - `headers`: Check `x-forwarded-for` and `x-forwarded-proto`
+
+3. **Common issues:**
+   - `is_trusted_proxy: false` → The proxy IP is not in your `TRUSTED_PROXIES` list
+   - `secure: false` with HTTPS → Trusted proxy not configured, so `x-forwarded-proto` header is ignored
+
+4. **Quick fix:** Set `TRUSTED_PROXIES=*` to trust all proxies
 
 ### Run Artisan Commands
 
@@ -291,3 +307,9 @@ LOG_LEVEL=warning
 php artisan migrate:status # Check database migrations
 php artisan config:show database # View database configuration
 ```
+
+
+### Get Help
+
+- Check the logs: `docker compose logs app`
+- Report issues on [GitHub](https://github.com/david-crty/databasement/issues)
