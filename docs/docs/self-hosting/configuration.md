@@ -98,7 +98,7 @@ When running behind a reverse proxy (nginx, Traefik, Kubernetes Ingress), config
 
 | Variable          | Description                                    | Default                                                   |
 |-------------------|------------------------------------------------|-----------------------------------------------------------|
-| `TRUSTED_PROXIES` | IP addresses or CIDR ranges of trusted proxies | `127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,::1')` |
+| `TRUSTED_PROXIES` | IP addresses or CIDR ranges of trusted proxies | `127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,::1` |
 
 **Values:**
 - `127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,::1')` - This covers all RFC 1918 private ranges

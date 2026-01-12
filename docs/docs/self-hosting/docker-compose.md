@@ -52,7 +52,7 @@ DB_DATABASE=/data/database.sqlite
 
 ```bash title=".env"
 APP_URL=http://localhost:2226
-APP_KEY=base64:your-generated-key-here
+APP_KEY=your-generated-key-here
 
 # Database (MySQL)
 DB_CONNECTION=mysql
@@ -85,7 +85,7 @@ services:
       - "2226:2226"
     env_file: .env
     volumes:
-      - /path/to/databasement/data:/data
+      - ./data:/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:2226/health"]
       interval: 10s
@@ -96,12 +96,13 @@ services:
     image: davidcrty/databasement:latest
     container_name: databasement-worker
     restart: unless-stopped
-    command: sh -c "php artisan db:wait && php artisan queue:work --queue=backups,default --tries=3 --timeout=3600 --sleep=3 --max-jobs=1000"
+    command: sh -c "php artisan db:wait --check-migrations && php artisan queue:work --queue=backups,default --tries=3 --timeout=3600 --sleep=3 --max-jobs=1000"
     env_file: .env
     volumes:
-      - /path/to/databasement/data:/data
+      - ./data:/data
     depends_on:
-      - app
+      app:
+        condition: service_healthy
 ```
 
 #### MySQL (Production Setup)
@@ -116,7 +117,7 @@ services:
       - "2226:2226"
     env_file: .env
     volumes:
-      - /path/to/databasement/data:/data
+      - ./data:/data
     depends_on:
       mysql:
         condition: service_healthy
@@ -130,11 +131,13 @@ services:
     image: davidcrty/databasement:latest
     container_name: databasement-worker
     restart: unless-stopped
-    command: sh -c "php artisan db:wait && php artisan queue:work --queue=backups,default --tries=3 --timeout=3600 --sleep=3 --max-jobs=1000"
+    command: sh -c "php artisan db:wait --check-migrations && php artisan queue:work --queue=backups,default --tries=3 --timeout=3600 --sleep=3 --max-jobs=1000"
     env_file: .env
     volumes:
-      - /path/to/databasement/data:/data
+      - ./data:/data
     depends_on:
+      app:
+        condition: service_healthy
       mysql:
         condition: service_healthy
 
@@ -148,7 +151,7 @@ services:
       MYSQL_USER: databasement
       MYSQL_PASSWORD: your-secure-password
     volumes:
-      - /path/to/mysql/data:/var/lib/mysql
+      - ./mysql-data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -170,7 +173,19 @@ The `worker` service runs the Laravel queue worker as a separate container. This
 docker compose up -d
 ```
 
-### 6. Access the Application
+### 6. Verify the Setup
+
+Wait for all services to be healthy, then verify the application is running:
+
+```bash
+# Check service status
+docker compose ps
+
+# Verify health endpoint
+curl http://localhost:2226/health
+```
+
+### 7. Access the Application
 
 Open http://localhost:2226 in your browser.
 
