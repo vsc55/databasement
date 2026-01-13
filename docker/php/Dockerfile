@@ -51,7 +51,7 @@ RUN addgroup -g ${PGID} application && \
 
 # Create directories with correct ownership
 RUN mkdir -p /app && chown application:application /app
-RUN mkdir -p /data && chown application:application /data
+RUN mkdir -p /data && chown -R application:application /data
 
 COPY scripts/ /usr/local/bin/
 RUN chmod 755 /usr/local/bin/*.sh
