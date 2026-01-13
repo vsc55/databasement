@@ -46,12 +46,12 @@ ENV PGID=1000
 # This user will be recreated at runtime if PUID/PGID differs
 RUN addgroup -g ${PGID} application && \
     adduser -u ${PUID} -G application -D -h /home/application application && \
-    setcap -r /usr/local/bin/frankenphp && \
-    chmod -R 777 /config
+    setcap -r /usr/local/bin/frankenphp
 
 # Create directories with correct ownership
-RUN mkdir -p /app && chown application:application /app
-RUN mkdir -p /data && chown -R application:application /data
+RUN mkdir -p /app /data
+RUN chmod -R 777 /config /data /app && \
+    chown -R application:application /app /config /data
 
 COPY scripts/ /usr/local/bin/
 RUN chmod 755 /usr/local/bin/*.sh

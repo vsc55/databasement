@@ -1,4 +1,5 @@
-FROM davidcrty/databasement-php:latest AS backend-build
+ARG BASE_IMAGE=davidcrty/databasement-php:latest
+FROM ${BASE_IMAGE} AS backend-build
 
 USER 1000
 
@@ -18,7 +19,8 @@ COPY --from=backend-build /app /app
 RUN npm run build
 
 
-FROM davidcrty/databasement-php:latest
+ARG BASE_IMAGE=davidcrty/databasement-php:latest
+FROM ${BASE_IMAGE}
 
 ARG APP_COMMIT_HASH=""
 ENV APP_ENV="production"
