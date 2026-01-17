@@ -17,14 +17,14 @@ This is a Laravel application for managing database server backups. It uses Live
 
 ## Development Commands
 
-**IMPORTANT**: All PHP commands MUST be run through Docker. Never run `php`, `composer`, or `vendor/bin/*` commands directly on the host. Use the Makefile targets or `docker compose exec app <command>` instead.
+**IMPORTANT**: All PHP commands MUST be run through Docker. Never run `php`, `composer`, or `vendor/bin/*` commands directly on the host. Use the Makefile targets or `docker compose exec --user application -T app <command>` instead. Always include `--user application` to ensure correct file permissions.
 
 ### Setup and Installation
 ```bash
 make setup              # Full project setup: install deps, env setup, generate key, migrate, build assets
 make install            # Install composer and npm dependencies only
-docker compose exec app composer require <package>  # Install a composer package
-docker compose exec app composer remove <package>   # Remove a composer package
+docker compose exec --user application -T app composer require <package>  # Install a composer package
+docker compose exec --user application -T app composer remove <package>   # Remove a composer package
 ```
 
 ### Running the Application
@@ -82,14 +82,14 @@ make analyse            # Alias for phpstan
 ### Debugging
 ```bash
 # Laravel Tinker - interactive REPL for debugging
-docker compose exec app php artisan tinker
+docker compose exec --user application app php artisan tinker
 
 # Execute a single command
-docker compose exec app php artisan tinker --execute="App\Models\User::first()"
+docker compose exec --user application -T app php artisan tinker --execute="App\Models\User::first()"
 
 # Examples:
-docker compose exec app php artisan tinker --execute="config('app.demo_mode')"
-docker compose exec app php artisan tinker --execute="\$user = App\Models\User::find(1); echo \$user->name;"
+docker compose exec --user application -T app php artisan tinker --execute="config('app.demo_mode')"
+docker compose exec --user application -T app php artisan tinker --execute="\$user = App\Models\User::find(1); echo \$user->name;"
 ```
 
 ### Database Operations
