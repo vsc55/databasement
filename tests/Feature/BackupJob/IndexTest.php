@@ -36,34 +36,13 @@ test('can search backup jobs by server name', function () {
     $snapshots2 = $factory->createSnapshots($server2, 'manual', $user->id);
     $snapshots2[0]->job->update(['status' => 'completed']);
 
+    // Search by server name - check database names to verify filtering
+    // (server names appear in the filter dropdown, so we check db names which are row-specific)
     Livewire::actingAs($user)
         ->test(Index::class)
         ->set('search', 'Production')
-        ->assertSee('Production MySQL')
-        ->assertDontSee('Development PostgreSQL');
-});
-
-test('can filter backup jobs by status', function () {
-    $user = User::factory()->create();
-    $factory = app(BackupJobFactory::class);
-
-    $server = DatabaseServer::factory()->create(['name' => 'Test Server', 'database_names' => ['test_db']]);
-
-    $completedSnapshots = $factory->createSnapshots($server, 'manual', $user->id);
-    $completedSnapshot = $completedSnapshots[0];
-    $completedSnapshot->job->update(['status' => 'completed']);
-    $completedSnapshot->update(['database_name' => 'completed_db']);
-
-    $failedSnapshots = $factory->createSnapshots($server, 'scheduled', $user->id);
-    $failedSnapshot = $failedSnapshots[0];
-    $failedSnapshot->job->update(['status' => 'failed']);
-    $failedSnapshot->update(['database_name' => 'failed_db']);
-
-    Livewire::actingAs($user)
-        ->test(Index::class)
-        ->set('statusFilter', ['completed'])
-        ->assertSee('completed_db')
-        ->assertDontSee('failed_db');
+        ->assertSee('production_db')
+        ->assertDontSee('development_db');
 });
 
 test('can filter backup jobs by multiple statuses', function () {
@@ -109,7 +88,45 @@ test('can filter backup jobs by type', function () {
         ->set('typeFilter', 'backup')
         ->assertSee('test_db')
         ->set('typeFilter', 'restore')
-        ->assertDontSee('test_db');
+        ->assertDontSee('test_db')
+        ->call('clear')
+        ->assertSet('typeFilter', '')
+        ->assertSee('test_db');
+});
+
+test('can filter backup jobs by server', function () {
+    $user = User::factory()->create();
+    $factory = app(BackupJobFactory::class);
+
+    $server1 = DatabaseServer::factory()->create(['name' => 'Production Server', 'database_names' => ['production_db']]);
+    $server2 = DatabaseServer::factory()->create(['name' => 'Development Server', 'database_names' => ['development_db']]);
+
+    $snapshots1 = $factory->createSnapshots($server1, 'manual', $user->id);
+    $snapshots1[0]->job->update(['status' => 'completed']);
+
+    $snapshots2 = $factory->createSnapshots($server2, 'manual', $user->id);
+    $snapshots2[0]->job->update(['status' => 'completed']);
+
+    // Filter by server1 - should see only production_db
+    Livewire::actingAs($user)
+        ->test(Index::class)
+        ->set('serverFilter', $server1->id)
+        ->assertSee('production_db')
+        ->assertDontSee('development_db');
+
+    // Filter by server2 - should see only development_db
+    Livewire::actingAs($user)
+        ->test(Index::class)
+        ->set('serverFilter', $server2->id)
+        ->assertSee('development_db')
+        ->assertDontSee('production_db');
+
+    // No filter - should see both
+    Livewire::actingAs($user)
+        ->test(Index::class)
+        ->set('serverFilter', '')
+        ->assertSee('production_db')
+        ->assertSee('development_db');
 });
 
 test('can download snapshot from local storage', function () {
