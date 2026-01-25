@@ -195,7 +195,12 @@ For S3-compatible storage providers, configure a custom endpoint:
 ```bash
 AWS_ENDPOINT_URL_S3=https://minio.yourdomain.com
 AWS_USE_PATH_STYLE_ENDPOINT=true
+# AWS_PUBLIC_ENDPOINT_URL_S3=https://minio.yourdomain.com 
 ```
+
+:::tip
+If your internal endpoint differs from the public URL (e.g., `http://minio:9000` vs `http://localhost:9000`), set `AWS_PUBLIC_ENDPOINT_URL_S3` for presigned download URLs to work correctly in your browser.
+:::
 
 #### IAM Role Assumption (Restricted Environments)
 
@@ -220,7 +225,8 @@ AWS_S3_PROFILE=my-s3-profile
 | `AWS_ACCESS_KEY_ID`           | AWS access key (picked up automatically by SDK) | -              |
 | `AWS_SECRET_ACCESS_KEY`       | AWS secret key (picked up automatically by SDK) | -              |
 | `AWS_REGION`                  | AWS region                                      | `us-east-1`    |
-| `AWS_ENDPOINT_URL_S3`         | Custom S3 endpoint URL                          | -              |
+| `AWS_ENDPOINT_URL_S3`         | Custom S3 endpoint URL (internal)               | -              |
+| `AWS_PUBLIC_ENDPOINT_URL_S3`  | Public S3 endpoint for presigned URLs           | -              |
 | `AWS_USE_PATH_STYLE_ENDPOINT` | Use path-style URLs (required for MinIO)        | `false`        |
 | `AWS_S3_PROFILE`              | AWS credential profile for S3                   | -              |
 | `AWS_CUSTOM_ROLE_ARN`         | IAM custom role ARN to assume                   | -              |
@@ -300,6 +306,13 @@ If your application shows HTTP instead of HTTPS, or shows the wrong client IP:
    - `secure: false` with HTTPS → Trusted proxy not configured, so `x-forwarded-proto` header is ignored
 
 4. **Quick fix:** Set `TRUSTED_PROXIES=*` to trust all proxies
+
+### More troubleshooting
+
+If you encounter issues, see the [Docker Compose Troubleshooting](./docker-compose#troubleshooting) section for common problems and solutions.
+
+See also [Docker Networking](../user-guide/database-servers#docker-networking) if you're having issues connecting to your database server.
+
 
 ### Run Artisan Commands
 
