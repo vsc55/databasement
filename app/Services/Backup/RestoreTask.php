@@ -67,9 +67,8 @@ class RestoreTask
             ]);
 
             $humanFileSize = Formatters::humanFileSize($snapshot->file_size);
-            $compressionMethod = $this->detectCompressionMethod($snapshot->filename);
-            $compressor = $this->compressorFactory->make($compressionMethod);
-            $compressedFile = $workingDirectory.'/snapshot.'.$compressor->getExtension();
+            $compressedFile = $workingDirectory.'/snapshot.'.$snapshot->compression_type->extension();
+            $compressor = $this->compressorFactory->make($snapshot->compression_type);
             // Download snapshot from volume
             $job->log("Downloading snapshot ({$humanFileSize}) from volume: {$snapshot->volume->name}", 'info', [
                 'volume_type' => $snapshot->volume->type,
@@ -218,22 +217,6 @@ class RestoreTask
             DatabaseType::MYSQL => $this->mysqlDatabase->setConfig($config),
             DatabaseType::POSTGRESQL => $this->postgresqlDatabase->setConfig($config),
             default => throw new UnsupportedDatabaseTypeException($targetServer->database_type->value),
-        };
-    }
-
-    /**
-     * Detect compression method from snapshot filename extension.
-     *
-     * @throws \InvalidArgumentException If the compression format is not supported
-     */
-    private function detectCompressionMethod(string $filename): string
-    {
-        return match (true) {
-            str_ends_with($filename, '.zst') => 'zstd',
-            str_ends_with($filename, '.gz') => 'gzip',
-            default => throw new \InvalidArgumentException(
-                "Unsupported compression format for file: {$filename}. Supported formats: .gz (gzip), .zst (zstd)"
-            ),
         };
     }
 }
