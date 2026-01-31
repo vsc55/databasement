@@ -74,11 +74,49 @@ class VolumeFactory extends Factory
      */
     public function s3(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn () => [
             'type' => 's3',
             'config' => [
                 'bucket' => 'backup-'.fake()->slug(),
                 'prefix' => fake()->optional()->slug(),
+            ],
+        ]);
+    }
+
+    /**
+     * Indicate that the volume is an SFTP type.
+     */
+    public function sftp(): static
+    {
+        return $this->state(fn () => [
+            'type' => 'sftp',
+            'config' => [
+                'host' => 'sftp.example.com',
+                'port' => 22,
+                'username' => 'backup-user',
+                'password' => 'test-password',
+                'root' => '/backups',
+                'timeout' => 10,
+            ],
+        ]);
+    }
+
+    /**
+     * Indicate that the volume is an FTP type.
+     */
+    public function ftp(): static
+    {
+        return $this->state(fn () => [
+            'type' => 'ftp',
+            'config' => [
+                'host' => 'ftp.example.com',
+                'port' => 21,
+                'username' => 'backup-user',
+                'password' => 'test-password',
+                'root' => '/backups',
+                'ssl' => false,
+                'passive' => true,
+                'timeout' => 90,
             ],
         ]);
     }

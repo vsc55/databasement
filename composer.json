@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
+        "ext-ftp": "*",
         "ext-pdo": "*",
         "blade-ui-kit/blade-icons": "^1.8",
         "codeat3/blade-devicons": "^1.8",
@@ -21,6 +22,8 @@
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.10.1",
         "league/flysystem-aws-s3-v3": "^3.0",
+        "league/flysystem-ftp": "^3.31",
+        "league/flysystem-sftp-v3": "^3.31",
         "livewire/volt": "^1.7.0",
         "owenvoke/blade-fontawesome": "^2.7",
         "robsontenorio/mary": "^2.4",

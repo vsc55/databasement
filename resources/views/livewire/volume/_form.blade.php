@@ -1,10 +1,7 @@
 @props(['form', 'submitLabel' => 'Save', 'cancelRoute' => 'volumes.index', 'readonly' => false])
 
 @php
-$storageTypes = [
-    ['id' => 'local', 'name' => 'Local Storage'],
-    ['id' => 's3', 'name' => 'Amazon S3'],
-];
+use App\Enums\VolumeType;
 @endphp
 
 <form wire:submit="save" class="space-y-6">
@@ -20,13 +17,32 @@ $storageTypes = [
             required
         />
 
-        <x-select
-            wire:model.live="form.type"
-            label="{{ __('Storage Type') }}"
-            :options="$storageTypes"
-            :disabled="$readonly"
-            required
-        />
+        <!-- Storage Type Selection -->
+        <div>
+            <label class="label label-text font-semibold mb-2">{{ __('Storage Type') }}</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                @foreach(VolumeType::cases() as $volumeType)
+                    @php
+                        $isSelected = $form->type === $volumeType->value;
+                        $buttonClass = match(true) {
+                            $isSelected && $readonly => 'btn-primary opacity-70 cursor-not-allowed border-2 border-primary',
+                            $isSelected => 'btn-primary',
+                            $readonly => 'btn-outline opacity-40 cursor-not-allowed',
+                            default => 'btn-outline',
+                        };
+                    @endphp
+                    <button
+                        type="button"
+                        wire:click="$set('form.type', '{{ $volumeType->value }}')"
+                        @if($readonly) disabled @endif
+                        class="btn justify-start gap-2 h-auto py-3 {{ $buttonClass }}"
+                    >
+                        <x-volume-type-icon :type="$volumeType" class="w-5 h-5" />
+                        <span>{{ $volumeType->label() }}</span>
+                    </button>
+                @endforeach
+            </div>
+        </div>
     </div>
 
     <!-- Configuration -->
@@ -35,60 +51,18 @@ $storageTypes = [
     <div class="space-y-4">
         <h3 class="text-lg font-semibold">{{ __('Configuration') }}</h3>
 
-        @if($form->type === 'local')
-            <!-- Local Storage Config -->
-            <x-input
-                wire:model="form.path"
-                label="{{ __('Path') }}"
-                placeholder="{{ __('e.g., /var/backups or /mnt/backup-storage') }}"
-                type="text"
-                :disabled="$readonly"
-                required
-            />
+        @php
+            $configType = VolumeType::from($form->type);
+            $configProperty = $configType->configPropertyName();
+        @endphp
 
-            @unless($readonly)
-                <p class="text-sm opacity-70">
-                    {{ __('Specify the absolute path where backups will be stored on the local filesystem.') }}
-                </p>
-            @endunless
-        @elseif($form->type === 's3')
-            <!-- S3 Config -->
-            <x-alert class="alert-info" icon="o-information-circle">
-                {{ __('S3 credentials are configured via environment variables.') }}
-                <x-slot:actions>
-                    <x-button
-                        label="{{ __('View S3 Configuration Docs') }}"
-                        link="https://david-crty.github.io/databasement/self-hosting/configuration#s3-storage"
-                        external
-                        class="btn-ghost btn-sm"
-                        icon="o-arrow-top-right-on-square"
-                    />
-                </x-slot:actions>
-            </x-alert>
-
-            <x-input
-                wire:model="form.bucket"
-                label="{{ __('S3 Bucket Name') }}"
-                placeholder="{{ __('e.g., my-backup-bucket') }}"
-                type="text"
-                :disabled="$readonly"
-                required
-            />
-
-            <x-input
-                wire:model="form.prefix"
-                label="{{ __('Prefix (Optional)') }}"
-                placeholder="{{ __('e.g., backups/production/') }}"
-                type="text"
-                :disabled="$readonly"
-            />
-
-            @unless($readonly)
-                <p class="text-sm opacity-70">
-                    {{ __('The prefix is prepended to all backup file paths in the S3 bucket.') }}
-                </p>
-            @endunless
-        @endif
+        <livewire:dynamic-component
+            :component="'volume.connectors.' . $form->type . '-config'"
+            :wire:model="'form.' . $configProperty"
+            :readonly="$readonly"
+            :is-editing="$form->volume !== null"
+            :wire:key="$form->type . '-config'"
+        />
 
         <!-- Test Connection Button -->
         <div class="pt-2">
