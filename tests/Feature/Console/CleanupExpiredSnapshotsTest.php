@@ -77,7 +77,7 @@ test('GFS retention combines daily, weekly, and monthly tiers', function () {
         'retention_days' => null,
         'gfs_keep_daily' => 2,
         'gfs_keep_weekly' => 2,
-        'gfs_keep_monthly' => 1,
+        'gfs_keep_monthly' => 2,
     ]);
 
     // Recent snapshots (should be kept by daily tier)
@@ -91,8 +91,8 @@ test('GFS retention combines daily, weekly, and monthly tiers', function () {
     // Snapshot from last week (kept by weekly tier)
     $lastWeek = createSnapshot($server, 'completed', now()->subWeek()->startOfWeek()->addDay());
 
-    // Snapshot from this month (kept by monthly tier)
-    $thisMonth = createSnapshot($server, 'completed', now()->startOfMonth()->addDay());
+    // Snapshot from last month (kept by monthly tier)
+    $lastMonth = createSnapshot($server, 'completed', now()->subMonth()->startOfMonth()->addDay());
 
     artisan('snapshots:cleanup')->assertSuccessful();
 
@@ -104,8 +104,8 @@ test('GFS retention combines daily, weekly, and monthly tiers', function () {
         // Weekly tier keeps oldest from this week and last week
         ->and(Snapshot::find($thisWeekOldest->id))->not->toBeNull()
         ->and(Snapshot::find($lastWeek->id))->not->toBeNull()
-        // Monthly tier keeps this month
-        ->and(Snapshot::find($thisMonth->id))->not->toBeNull();
+        // Monthly tier keeps last month
+        ->and(Snapshot::find($lastMonth->id))->not->toBeNull();
 });
 
 test('GFS retention applies per database_name', function () {
