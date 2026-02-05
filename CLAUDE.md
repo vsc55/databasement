@@ -143,8 +143,9 @@ The Docker setup provides:
 - `app/Livewire/Snapshot/Index.php` - List and manage backup snapshots
 - `app/Livewire/Settings/*` - User settings pages (Profile, Password, TwoFactor, Appearance, DeleteUserForm)
 
-**Volt Components**: Single-file components for authentication flows (in `resources/views/livewire/`)
+**Authentication Views**: Plain Blade templates for auth flows (in `resources/views/livewire/auth/`)
 - Auth flows: login, register, two-factor, password reset, email verification
+- These are rendered by Laravel Fortify, not Livewire components
 
 **Models**: Uses ULIDs for primary keys
 - `DatabaseServer` - Stores connection info (password hidden in responses)
@@ -165,7 +166,7 @@ The Docker setup provides:
 
 ### Key Patterns
 
-1. **Livewire Architecture**: The app uses class-based Livewire components for all main pages (CRUD operations, settings) and Volt (single-file components) for authentication flows only.
+1. **Livewire Architecture**: The app uses class-based Livewire components for all main pages (CRUD operations, settings). Authentication flows use plain Blade views rendered by Laravel Fortify. All full-page components use `Route::livewire()` routing.
 
 2. **Mary UI Components**: All UI components use Mary UI (built on daisyUI). Components are used without prefixes (e.g., `<x-button>`, `<x-input>`, `<x-card>`). Key patterns:
    - Modals use `wire:model` with boolean properties (e.g., `$showDeleteModal`)
@@ -197,8 +198,7 @@ The Docker setup provides:
 Routes are defined in `routes/web.php`:
 - Public: `/` (welcome page)
 - Authenticated: `/dashboard`, `/database-servers/*`, `/volumes/*`, `/snapshots`, `/settings/*`
-- Auth routes use `Volt::route()` helper for single-file components
-- All other routes use Livewire component classes directly (e.g., `Route::get('database-servers', \App\Livewire\DatabaseServer\Index::class)`)
+- All routes use `Route::livewire()` for full-page Livewire components (e.g., `Route::livewire('database-servers', \App\Livewire\DatabaseServer\Index::class)`)
 
 ## Development Workflow
 
