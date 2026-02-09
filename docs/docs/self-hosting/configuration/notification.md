@@ -132,6 +132,10 @@ Notifications are sent as `POST` requests with a JSON body:
 | `X-Webhook-Event` | Notification class name (e.g., `BackupFailedNotification`) |
 | `X-Webhook-Token` | The configured secret (only if a secret is configured) |
 
+### Tip: Using with Apprise
+
+The webhook channel can be pointed at an [Apprise](https://github.com/caronc/apprise) API endpoint to relay notifications to 100+ services (Ntfy, Matrix, Mattermost, etc.). Set the Apprise stateless endpoint (e.g., `https://apprise.example.com/notify/`) as your Webhook URL.
+
 ## What Gets Notified
 
 Notifications are sent only for **failures**:
