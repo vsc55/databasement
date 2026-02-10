@@ -12,7 +12,8 @@ Core application settings including database, timezone, proxy configuration, and
 | ----------- | ------------------------------------------------ | ----------------------- |
 | `APP_KEY`   | Application encryption key (required)            | -                       |
 | `APP_URL`   | Full URL where the app is accessible             | `http://localhost:2226` |
-| `APP_DEBUG` | Enable debug mode (set to `false` in production) | `false`                 || `TZ`        | Application timezone                             | `UTC`                   |
+| `APP_DEBUG` | Enable debug mode (set to `false` in production) | `false`                 |
+| `TZ`        | Application timezone                             | `UTC`                   |
 
 
 ### Generating the Application Key
