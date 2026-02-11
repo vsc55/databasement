@@ -127,10 +127,10 @@ Databasement uses [Laravel Octane](https://laravel.com/docs/octane) with Franken
 Each long-lived process maintains its own database connection. The expected number of connections is:
 
 ```
-Total connections = OCTANE_WORKERS + 1 (queue worker) + 1 (scheduler)
+Total connections = 1 (Octane main) + OCTANE_WORKERS + 1 (queue worker) + 1 (scheduler)
 ```
 
-**Default:** `2 + 1 + 1 = 4 connections`
+**Default:** `1 + 2 + 1 + 1 = 5 connections`
 
 ### Disabling Octane
 
@@ -138,6 +138,12 @@ To disable Octane and use classic FrankenPHP mode (ephemeral processes, lower me
 
 ```bash
 OCTANE_ENABLED=false
+```
+
+With Octane disabled, only background processes maintain persistent connections:
+
+```
+Total connections = 1 (queue worker) + 1 (scheduler) = 2 connections
 ```
 
 ## Logging
