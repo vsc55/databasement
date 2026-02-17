@@ -3,7 +3,7 @@ sidebar_position: 0
 slug: /
 ---
 
-![Databasement Banner](../static/img/banner-v1.png)
+![Databasement Banner](../static/img/banner-v2.png)
 
 # Databasement Documentation
 
@@ -11,15 +11,16 @@ Welcome to the **Databasement** documentation!
 
 > **Try it out!** Explore the [live demo](https://databasement-demo.crty.dev/) to see Databasement in action.
 
-Databasement is a web application for managing database server backups. It allows you to register database servers (MySQL, PostgreSQL, MariaDB), test connections, schedule automated backups, and restore snapshots to any registered server.
+Databasement is a web application for managing database server backups. It allows you to register database servers (MySQL, PostgreSQL, MariaDB, MongoDB, SQLite, Redis/Valkey), test connections, schedule automated backups, and restore snapshots to any registered server.
 
 ## Features
 
-- **Multi-database support**: Manage MySQL, PostgreSQL, and MariaDB servers
+- **Multi-database support**: Manage MySQL, PostgreSQL, MariaDB, MongoDB, SQLite, and Redis/Valkey servers
+- **SSH tunnel support**: Connect to databases in private networks through a bastion/jump server
 - **Automated backups**: Schedule recurring backups with customizable retention
 - **Storage volumes**: Store backups locally, on S3-compatible storage, or via SFTP/FTP
 - **Cross-server restore**: Restore snapshots from one server to another
-- **Failure notifications**: Get alerted via email, Slack, or Discord when jobs fail
+- **Failure notifications**: Get alerted via Email, Slack, Discord, Telegram, Pushover, Gotify, or Webhook when jobs fail
 - **User management**: Multi-user support with two-factor authentication
 - **Simple deployment**: Single container with built-in web server, queue worker, and scheduler
 

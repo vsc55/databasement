@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/David-Crty/databasement">
-    <img src="docs/static/img/banner-v1.png" alt="Databasement Banner" />
+    <img src="docs/static/img/banner-v2.png" alt="Databasement Banner" />
   </a>
 </p>
 
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  A modern, self-hosted database backup management application for MySQL, PostgreSQL, and MariaDB.
+  A modern, self-hosted database backup management application for MySQL, PostgreSQL, MariaDB, MongoDB, SQLite, and Redis.
 </p>
 
 <p align="center">
@@ -33,13 +33,14 @@
 
 ## Features
 
-- **Multi-database support** — Manage MySQL, PostgreSQL, and MariaDB servers from a single interface
+- **Multi-database support** — Manage MySQL, PostgreSQL, MariaDB, MongoDB, SQLite, and Redis/Valkey servers from a single interface
+- **SSH tunnel support** — Connect to databases in private networks through a bastion/jump server with password or key-based authentication
 - **Automated backups** — Schedule recurring backups on daily or weekly intervals. Flexible retention policies: simple time-based (days) or GFS (grandfather-father-son)
 - **Multiple compression options** — gzip, zstd (20-40% better compression), or encrypted (AES-256 for sensitive data)
 - **Cross-server restore** — Restore snapshots from production to staging, or between any compatible servers
 - **Flexible storage** — Store backups locally, on S3-compatible storage (AWS S3, MinIO, etc.), or remote servers via SFTP/FTP
 - **Real-time monitoring** — Track backup and restore progress with detailed job logs
-- **Failure notifications** — Get alerted via email or Slack when backup or restore jobs fail
+- **Failure notifications** — Get alerted via Email, Slack, Discord, Telegram, Pushover, Gotify, or Webhook when jobs fail
 - **Team ready** — Multi-user support with role-based access and optional two-factor authentication
 - **Simple deployment** — Single Docker container with built-in web server, queue worker, and scheduler
 

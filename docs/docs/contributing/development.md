@@ -184,6 +184,7 @@ Ensure tests pass before committing.
 - **BackupTask** — Executes database dumps, compression, and storage
 - **RestoreTask** — Downloads, decompresses, and restores snapshots
 - **DatabaseProvider** — Creates database handlers, tests connections, lists databases
+- **SshTunnelService** — Establishes SSH tunnels for database connections through bastion hosts
 - **ShellProcessor** — Executes shell commands with logging
 
 ### Livewire Components
@@ -199,10 +200,11 @@ Ensure tests pass before committing.
 
 **Backup Process:**
 1. Connect to database server
-2. Execute database-specific dump (mysqldump/pg_dump)
-3. Compress with gzip
-4. Upload to configured volume (local/S3)
-5. Record snapshot metadata
+2. Establish SSH tunnel if configured
+3. Execute database-specific dump (mysqldump/pg_dump/mongodump/redis-cli/cp)
+4. Compress with gzip
+5. Upload to configured volume (local/S3)
+6. Record snapshot metadata
 
 **Restore Process:**
 1. Select source snapshot

@@ -10,8 +10,8 @@ Databasement allows you to create on-demand backups of your databases. Backups a
 
 When you create a backup, Databasement:
 
-1. Connects to the database server
-2. Runs the appropriate dump command (`mysqldump` or `pg_dump`)
+1. Connects to the database server (via SSH tunnel if configured)
+2. Runs the appropriate dump command for the database type
 3. Compresses the output with gzip
 4. Transfers the compressed file to the selected storage volume
 5. Creates a snapshot record with metadata
@@ -35,6 +35,17 @@ PGPASSWORD='...' pg_dump --clean --if-exists --no-owner --no-privileges --quote-
 **SQLite:**
 ```bash
 cp '/path/to/database.sqlite' dump.db
+```
+
+**MongoDB:**
+```bash
+mongodump --host='...' --port='...' --username='...' --password='...' \
+  --authenticationDatabase='admin' --db='database_name' --archive=dump.archive
+```
+
+**Redis/Valkey:**
+```bash
+redis-cli -h '...' -p '...' -a '...' --no-auth-warning --rdb dump.rdb
 ```
 
 All dumps are then compressed with gzip before being transferred to the storage volume.

@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Database Servers
 
-Database servers are the source of your backups. Databasement can connect to and backup MySQL, PostgreSQL, and MariaDB servers.
+Database servers are the source of your backups. Databasement can connect to and backup MySQL, PostgreSQL, MariaDB, MongoDB, SQLite, and Redis/Valkey servers.
 
 ## Connection Requirements
 
@@ -85,6 +85,70 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO databasement;
 
 :::note[Single database only]
 For single-database access without `CREATEDB`, the target database must already exist. Grant `ALL PRIVILEGES` on that specific database and its schema. The user won't be able to drop/recreate the database during restore - Databasement will drop and recreate tables instead.
+:::
+
+### MongoDB
+
+MongoDB uses the `mongodump` and `mongorestore` CLI tools for backup and restore operations.
+
+#### Connection settings
+
+| Field | Description |
+|-------|-------------|
+| Host | MongoDB server hostname or IP |
+| Port | MongoDB port (default: 27017) |
+| Username | Database user (optional for unauthenticated instances) |
+| Password | User password |
+| Auth Source | Authentication database (default: `admin`) |
+
+#### Creating a backup user
+
+```javascript
+use admin
+db.createUser({
+  user: "databasement",
+  pwd: "your_secure_password",
+  roles: [
+    { role: "readAnyDatabase", db: "admin" },
+    { role: "backup", db: "admin" },
+    { role: "restore", db: "admin" }
+  ]
+})
+```
+
+:::note
+The `admin`, `local`, and `config` system databases are automatically excluded from the database list.
+:::
+
+### Redis / Valkey
+
+Redis and Valkey instances are backed up using `redis-cli --rdb`, which creates a point-in-time RDB snapshot of the entire dataset.
+
+#### Connection settings
+
+| Field | Description |
+|-------|-------------|
+| Host | Redis server hostname or IP |
+| Port | Redis port (default: 6379) |
+| Username | ACL username (optional, Redis 6+) |
+| Password | Server password or ACL user password |
+
+:::info Backup only
+Redis/Valkey supports backup only. Restore is not currently supported due to the nature of RDB file imports, which require direct server access.
+:::
+
+### SQLite
+
+SQLite databases are backed up by copying the database file directly. Databasement connects to the remote server via SFTP (through an SSH tunnel) to access the file.
+
+#### Connection settings
+
+| Field | Description |
+|-------|-------------|
+| Database paths | One or more absolute paths to `.sqlite` files on the remote server |
+
+:::note
+SQLite requires an SSH tunnel to access remote database files. Databasement uses SFTP over the tunnel to copy and restore files.
 :::
 
 ## Troubleshooting Connection Issues

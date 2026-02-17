@@ -43,4 +43,15 @@ PGPASSWORD='...' psql --host='...' --port='...' --username='...' \
 cp '/path/to/snapshot' '/path/to/database.sqlite'
 ```
 
+**MongoDB:**
+```bash
+mongorestore --host='...' --port='...' --username='...' --password='...' \
+  --authenticationDatabase='admin' --archive='/path/to/dump.archive' \
+  --nsFrom='source_db.*' --nsTo='target_db.*' --drop
+```
+
+:::info
+Redis/Valkey restore is not currently supported. RDB file imports require direct server access.
+:::
+
 All snapshots are decompressed with `gzip -d` before restore.

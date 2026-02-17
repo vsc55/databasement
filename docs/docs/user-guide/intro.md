@@ -31,9 +31,9 @@ Two-factor authentication can be enabled later in your account settings for addi
 Navigate to **Database Servers** and click **Add Server**. You'll need:
 
 - **Name**: A friendly name for this server (e.g., "Production MySQL")
-- **Type**: MySQL, PostgreSQL, or MariaDB
+- **Type**: MySQL, PostgreSQL, MariaDB, MongoDB, SQLite, or Redis/Valkey
 - **Host**: The server hostname or IP address
-- **Port**: The database port (default: 3306 for MySQL, 5432 for PostgreSQL)
+- **Port**: The database port (default: 3306 for MySQL, 5432 for PostgreSQL, 27017 for MongoDB, 6379 for Redis)
 - **Username**: Database user with backup privileges
 - **Password**: The database password
 
