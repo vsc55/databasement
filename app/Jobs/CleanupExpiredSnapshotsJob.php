@@ -2,14 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Services\Backup\SnapshotVerificationService;
+use App\Services\Backup\SnapshotCleanupService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class VerifySnapshotFileJob implements ShouldQueue
+class CleanupExpiredSnapshotsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -17,13 +17,14 @@ class VerifySnapshotFileJob implements ShouldQueue
 
     public int $tries = 1;
 
-    public function __construct()
-    {
+    public function __construct(
+        public bool $dryRun = false
+    ) {
         $this->onQueue('backups');
     }
 
-    public function handle(SnapshotVerificationService $service): void
+    public function handle(SnapshotCleanupService $service): void
     {
-        $service->run();
+        $service->run($this->dryRun);
     }
 }

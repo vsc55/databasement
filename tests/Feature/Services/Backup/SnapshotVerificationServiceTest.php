@@ -1,14 +1,20 @@
 <?php
 
 use App\Facades\AppConfig;
-use App\Jobs\VerifySnapshotFileJob;
 use App\Models\DatabaseServer;
 use App\Models\Snapshot;
 use App\Notifications\SnapshotsMissingNotification;
 use App\Services\Backup\BackupJobFactory;
 use App\Services\Backup\Filesystems\FilesystemProvider;
+use App\Services\Backup\SnapshotVerificationService;
+use App\Services\FailureNotificationService;
 use Illuminate\Support\Facades\Notification;
 use League\Flysystem\Filesystem;
+
+function makeService(FilesystemProvider $provider): SnapshotVerificationService
+{
+    return new SnapshotVerificationService($provider, app(FailureNotificationService::class));
+}
 
 test('sets file_exists to true when file exists on volume', function () {
     $snapshot = Snapshot::factory()->create();
@@ -24,7 +30,7 @@ test('sets file_exists to true when file exists on volume', function () {
         ->once()
         ->andReturn($mockFilesystem);
 
-    (new VerifySnapshotFileJob($snapshot->id))->handle($mockProvider, app(\App\Services\FailureNotificationService::class));
+    makeService($mockProvider)->run();
 
     $snapshot->refresh();
     expect($snapshot->file_exists)->toBeTrue()
@@ -45,7 +51,7 @@ test('sets file_exists to false when file is missing from volume', function () {
         ->once()
         ->andReturn($mockFilesystem);
 
-    (new VerifySnapshotFileJob($snapshot->id))->handle($mockProvider, app(\App\Services\FailureNotificationService::class));
+    makeService($mockProvider)->run();
 
     $snapshot->refresh();
     expect($snapshot->file_exists)->toBeFalse()
@@ -60,21 +66,14 @@ test('handles filesystem errors gracefully without changing file_exists', functi
         ->once()
         ->andThrow(new \Exception('Connection timeout'));
 
-    (new VerifySnapshotFileJob($snapshot->id))->handle($mockProvider, app(\App\Services\FailureNotificationService::class));
+    makeService($mockProvider)->run();
 
     $snapshot->refresh();
     expect($snapshot->file_exists)->toBeTrue()
         ->and($snapshot->file_verified_at)->not->toBeNull();
 });
 
-test('skips gracefully when snapshot does not exist', function () {
-    $mockProvider = Mockery::mock(FilesystemProvider::class);
-    $mockProvider->shouldNotReceive('getForVolume');
-
-    (new VerifySnapshotFileJob('non-existent-id'))->handle($mockProvider, app(\App\Services\FailureNotificationService::class));
-});
-
-test('verifies all completed snapshots when no snapshotId provided', function () {
+test('verifies all completed snapshots', function () {
     $factory = app(BackupJobFactory::class);
 
     $server = DatabaseServer::factory()->create(['database_names' => ['db1', 'db2']]);
@@ -96,7 +95,7 @@ test('verifies all completed snapshots when no snapshotId provided', function ()
     $mockProvider = Mockery::mock(FilesystemProvider::class);
     $mockProvider->shouldReceive('getForVolume')->times(2)->andReturn($mockFilesystem);
 
-    (new VerifySnapshotFileJob)->handle($mockProvider, app(\App\Services\FailureNotificationService::class));
+    makeService($mockProvider)->run();
 
     foreach ($snapshots as $snapshot) {
         $snapshot->refresh();
@@ -127,7 +126,7 @@ test('sends notification when newly missing files are detected in bulk mode', fu
     $mockProvider = Mockery::mock(FilesystemProvider::class);
     $mockProvider->shouldReceive('getForVolume')->once()->andReturn($mockFilesystem);
 
-    (new VerifySnapshotFileJob)->handle($mockProvider, app(\App\Services\FailureNotificationService::class));
+    makeService($mockProvider)->run();
 
     Notification::assertSentOnDemand(
         SnapshotsMissingNotification::class,
@@ -155,7 +154,7 @@ test('does not send notification when no new files are missing', function () {
     $mockProvider = Mockery::mock(FilesystemProvider::class);
     $mockProvider->shouldReceive('getForVolume')->once()->andReturn($mockFilesystem);
 
-    (new VerifySnapshotFileJob)->handle($mockProvider, app(\App\Services\FailureNotificationService::class));
+    makeService($mockProvider)->run();
 
     Notification::assertNothingSent();
 });
