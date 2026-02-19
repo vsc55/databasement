@@ -4,6 +4,7 @@ namespace App\Livewire\Dashboard;
 
 use App\Models\BackupJob;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
@@ -31,7 +32,8 @@ class JobStatusGrid extends Component
         $this->selectedJobId = null;
     }
 
-    public function getSelectedJobProperty(): ?BackupJob
+    #[Computed]
+    public function selectedJob(): ?BackupJob
     {
         if (! $this->selectedJobId) {
             return null;
