@@ -48,7 +48,7 @@ MAIL_FROM_NAME="Databasement"
 
 ---
 
-### No encryption (port 25)
+### Unencrypted SMTP / no forced encryption (port 25)
 
 ```bash
 MAIL_MAILER=smtp
@@ -83,6 +83,8 @@ Or with implicit TLS:
 MAIL_MAILER=smtp
 MAIL_URL=smtps://user:pass@smtp.example.com:465
 ```
+
+> **Note:** If your username or password contains special URI characters (e.g. `@`, `:`, `+`, `#`), percent-encode them in the DSN (e.g. `@` → `%40`).
 
 When `MAIL_URL` is defined, it overrides `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, and `MAIL_SCHEME`.
 
