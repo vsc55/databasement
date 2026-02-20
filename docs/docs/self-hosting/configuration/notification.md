@@ -12,6 +12,8 @@ This page covers additional setup guides for each channel.
 
 Databasement uses Laravel's mail system. Configure your mail driver with these environment variables:
 
+### Basic SMTP configuration
+
 ```bash
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.example.com
@@ -22,6 +24,33 @@ MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=databasement@example.com
 MAIL_FROM_NAME="Databasement"
 ```
+
+### Encryption options
+
+`MAIL_ENCRYPTION` supports:
+
+- `tls` → STARTTLS (typically port 587)
+- `ssl` → SMTPS (typically port 465)
+- empty or not set → no encryption enforced
+
+Example without encryption:
+
+```bash
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.example.com
+MAIL_PORT=25
+MAIL_ENCRYPTION=
+```
+
+> **Note**
+> If your SMTP server runs on port 25 and must not use TLS, but it advertises `STARTTLS`, you must disable auto-TLS explicitly using a DSN.
+
+```bash
+MAIL_MAILER=smtp
+MAIL_URL=smtp://smtp.example.com:25?auto_tls=false
+```
+
+When `MAIL_URL` is defined, it overrides `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, and `MAIL_PASSWORD`.
 
 ## Slack {#slack}
 
