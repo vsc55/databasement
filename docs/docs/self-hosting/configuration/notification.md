@@ -10,47 +10,89 @@ This page covers additional setup guides for each channel.
 
 ## Email {#email}
 
-Databasement uses Laravel's mail system. Configure your mail driver with these environment variables:
+Databasement uses Laravel's mail system (Symfony Mailer). Configure your mail driver with these environment variables:
 
-### Basic SMTP configuration
+---
+
+### Basic SMTP configuration (STARTTLS – typical 587)
 
 ```bash
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.example.com
 MAIL_PORT=587
+MAIL_SCHEME=smtp
 MAIL_USERNAME=your-username
 MAIL_PASSWORD=your-password
-MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=databasement@example.com
 MAIL_FROM_NAME="Databasement"
 ```
 
-### Encryption options
+`smtp` uses plain SMTP and automatically negotiates STARTTLS if the server supports it (commonly port 587).
 
-`MAIL_ENCRYPTION` supports:
+---
 
-- `tls` → STARTTLS (typically port 587)
-- `ssl` → SMTPS (typically port 465)
-- empty or not set → no encryption enforced
+### SMTPS (implicit TLS – typical 465)
 
-Example without encryption:
+```bash
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.example.com
+MAIL_PORT=465
+MAIL_SCHEME=smtps
+MAIL_USERNAME=your-username
+MAIL_PASSWORD=your-password
+MAIL_FROM_ADDRESS=databasement@example.com
+MAIL_FROM_NAME="Databasement"
+```
+
+`smtps` enables implicit TLS from the beginning of the connection.
+
+---
+
+### No encryption (port 25)
 
 ```bash
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.example.com
 MAIL_PORT=25
-MAIL_ENCRYPTION=
+MAIL_SCHEME=smtp
 ```
 
-> **Note**
-> If your SMTP server runs on port 25 and must not use TLS, but it advertises `STARTTLS`, you must disable auto-TLS explicitly using a DSN.
+If the server advertises `STARTTLS`, Symfony will attempt to use it automatically.
+
+If you **must explicitly disable STARTTLS**, use a DSN:
 
 ```bash
 MAIL_MAILER=smtp
 MAIL_URL=smtp://smtp.example.com:25?auto_tls=false
 ```
 
-When `MAIL_URL` is defined, it overrides `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, and `MAIL_PASSWORD`.
+---
+
+### Using a DSN (advanced configuration)
+
+You may configure the full connection using `MAIL_URL`:
+
+```bash
+MAIL_MAILER=smtp
+MAIL_URL=smtp://user:pass@smtp.example.com:587
+```
+
+Or with implicit TLS:
+
+```bash
+MAIL_MAILER=smtp
+MAIL_URL=smtps://user:pass@smtp.example.com:465
+```
+
+When `MAIL_URL` is defined, it overrides `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, and `MAIL_SCHEME`.
+
+---
+
+### Removed option
+
+`MAIL_ENCRYPTION` is no longer used.
+
+Encryption behavior is controlled exclusively by the DSN scheme (`smtp` or `smtps`) and optional DSN parameters.
 
 ## Slack {#slack}
 
